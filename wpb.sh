@@ -3,7 +3,7 @@
 # $ wpbpaste
 # ほげほげ
 
-MYSTR="greymd"
+MYSTR="myclip"
 wpbcopy () {
     local TRANS_URL=$(curl -so- --upload-file <(cat) https://transfer.sh/$MYSTR);
     curl -s -X POST "https://cl1p.net/$MYSTR" --data "content=$TRANS_URL" > /dev/null
