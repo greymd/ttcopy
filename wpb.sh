@@ -1,7 +1,8 @@
 # Usage
-# $ echo ほげほげ | wpbcopy
+
+# $ echo foobar | wpbcopy
 # $ wpbpaste
-# ほげほげ
+# foobar
 
 MYSTR="myclip"
 wpbcopy () {
