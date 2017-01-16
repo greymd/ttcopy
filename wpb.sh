@@ -10,6 +10,7 @@
 # $ wpbpaste | file -
 # /dev/stdin: JPEG image data, JFIF standard 1.01
 
+# Set MYSTR as you like.
 MYSTR="myclip"
 wpbcopy () {
     local TRANS_URL=$(curl -so- --upload-file <(cat) https://transfer.sh/$MYSTR);
