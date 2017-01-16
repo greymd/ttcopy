@@ -13,6 +13,9 @@
 # Set ID and PASSWORD **AS YOU LIKE**.
 MYID="your_id"
 PASSWD="your_password"
+
+# Whare the last pasted content stored is.
+# It is re-used when you failed to get the remote content.
 LASTPASTE_PATH="${TMPDIR}/lastPaste"
 
 wpbcopy () {
