@@ -3,12 +3,13 @@
 # $ wpbpaste
 # ほげほげ
 
+MYSTR="greymd"
 wpbcopy () {
-    local TRANS_URL=$(curl -so- --upload-file <(cat) https://transfer.sh/myclip);
-    curl -s -X POST 'https://cl1p.net/myclip' --data "content=$TRANS_URL" -w "%{http_code}" > /dev/null
+    local TRANS_URL=$(curl -so- --upload-file <(cat) https://transfer.sh/$MYSTR);
+    curl -s -X POST "https://cl1p.net/$MYSTR" --data "content=$TRANS_URL" > /dev/null
 }
 
 wpbpaste () {
-    local TRANS_URL=$(curl -s 'https://cl1p.net/myclip' | xmllint --html --xpath '/html/body/div/div/textarea/text()' -)
+    local TRANS_URL=$(curl -s "https://cl1p.net/$MYSTR" | xmllint --html --xpath '/html/body/div/div/textarea/text()' -)
     curl -so- "$TRANS_URL"
 }
