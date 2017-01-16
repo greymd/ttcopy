@@ -1,8 +1,14 @@
 # Usage
 
+## Example 1 (Text)
 # $ echo foobar | wpbcopy
 # $ wpbpaste
 # foobar
+
+## Example 2 (Binary)
+# $ cat image.jpg| wpbcopy
+# $ wpbpaste | file -
+# /dev/stdin: JPEG image data, JFIF standard 1.01
 
 MYSTR="myclip"
 wpbcopy () {
