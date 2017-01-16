@@ -1,5 +1,7 @@
 #!/bin/bash
-set -u
+
+[ -z "$WPB_ID" ] && echo "Set environment variable (WPB_ID)." >&2 && exit 1
+[ -z "$WPB_PASSWORD" ] && (echo "Set environment variable (WPB_PASSWORD)." >&2 && exit 1
 
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
