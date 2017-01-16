@@ -1,3 +1,6 @@
+#!/bin/bash
+set -u
+
 # Usage
 
 ## Example 1 (Text)
