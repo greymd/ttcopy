@@ -11,30 +11,26 @@ TRANSFER_SH="https://transfer.sh"
 
 spin_pid=""
 
-spin::loop () {
-    local message=$1
+unspin () {
+    tput cnorm # make the cursor visible
+    echo -n $'\r'"`tput el`" >&2
+}
+
+spin () {
+    local pid=$1
+    local message=$2
     tput civis # make the cursor invisible
 
-    trap "exit;" SIGHUP SIGINT SIGQUIT SIGTERM
     yes "⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏" | tr ' ' '\n' | while read spin;
     do
-        echo -n "$spin $message \r" >&2
-        sleep 1
+        kill -0 $pid 2> /dev/null
+        if [ $? -ne 0 ]; then
+            exit;
+        fi
+
+        echo -n "$spin $message "$'\r' >&2
+        perl -e 'select(undef, undef, undef, 0.25)' # sleep 0.25s
     done
-}
-
-unspin() {
-    kill $spin_pid
-    wait $spin_pid
-
-    tput cnorm # make the cursor visible
-    echo -n "\r`tput el`" >&2
-}
-
-spin() {
-    message=$1
-    spin::loop $1 &
-    spin_pid=$!
 }
 
 is_env_ok () {
@@ -51,40 +47,50 @@ is_env_ok () {
 }
 
 wpbcopy () {
-    # Start as the subshell so it can simply "exit" in trap, with unspinning.
-    (
+    cat - | (
         is_env_ok || return -1
-        spin "Copying..."
 
-        # Don't forget to unspin when terminated by user, or it can be zombie
-        trap "unspin; exit;" SIGHUP SIGINT SIGQUIT SIGTERM
+        trap "kill 0; exit" SIGHUP SIGINT SIGQUIT SIGTERM
 
         local TRANS_URL=$(curl -so- --upload-file <(cat | openssl aes-256-cbc -e -pass pass:$WPB_PASSWORD) $TRANSFER_SH/$WPB_ID );
         curl -s -X POST "$CLIP_NET/$ID_PREFIX/$WPB_ID" --data "content=$TRANS_URL" > /dev/null
         unspin
         echo "Copied!" >&2
+    ) &
+
+    (
+        # Start as the subshell so it can simply "exit" in trap,
+        # with killing background process.
+
+        trap "kill $!; exit" SIGHUP SIGINT SIGQUIT SIGTERM
+        spin $! "Copying..."
     )
 }
 
 wpbpaste () {
-    # Start as the subshell so it can simply "exit" in trap, with unspinning.
     (
         is_env_ok || return -1
-        spin "Pasting..."
 
-        # Don't forget to unspin when terminated by user, or it can be zombie
-        trap "unspin; exit;" SIGHUP SIGINT SIGQUIT SIGTERM
+        trap "kill 0; exit" SIGHUP SIGINT SIGQUIT SIGTERM
 
         local TRANS_URL=$(curl -s "$CLIP_NET/$ID_PREFIX/$WPB_ID" | xmllint --html --xpath '/html/body/div/div/textarea/text()' - 2> /dev/null) || ""
         if [ "$TRANS_URL" = "" ]; then
             [ -f "$LASTPASTE_PATH" ] || return 1
-            unspin
             echo "(Pasting the last paste)" >&2
+            unspin
             cat "$LASTPASTE_PATH" | openssl aes-256-cbc -d -pass pass:$WPB_PASSWORD
             return 0
         fi
         local result=`curl -so- "$TRANS_URL" | tee "$LASTPASTE_PATH" | openssl aes-256-cbc -d -pass pass:$WPB_PASSWORD`;
         unspin
         echo $result
+    ) &
+
+    (
+        # Start as the subshell so it can simply "exit" in trap,
+        # with killing background process.
+
+        trap "kill $!; exit" SIGHUP SIGINT SIGQUIT SIGTERM
+        spin $! "Pasting..."
     )
 }
