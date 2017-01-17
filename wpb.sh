@@ -9,8 +9,6 @@ ID_PREFIX="wpbcopy"
 CLIP_NET="https://cl1p.net"
 TRANSFER_SH="https://transfer.sh"
 
-spin_pid=""
-
 unspin () {
     tput cnorm # make the cursor visible
     echo -n $'\r'"`tput el`" >&2
