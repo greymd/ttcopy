@@ -79,9 +79,9 @@ wpbpaste () {
             cat "$LASTPASTE_PATH" | openssl aes-256-cbc -d -pass pass:$WPB_PASSWORD
             return 0
         fi
-        local result=`curl -so- "$TRANS_URL" | tee "$LASTPASTE_PATH" | openssl aes-256-cbc -d -pass pass:$WPB_PASSWORD`;
+        curl -so- "$TRANS_URL" > "$LASTPASTE_PATH"
         unspin
-        echo $result
+        cat "$LASTPASTE_PATH" | openssl aes-256-cbc -d -pass pass:$WPB_PASSWORD
     ) &
 
     (
