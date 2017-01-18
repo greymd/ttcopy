@@ -28,6 +28,12 @@ test_simple_string () {
     assertEquals "aaaa" "$(wpbpaste)"
 }
 
+test_include_whitespaces () {
+    echo "aaa bbb ccc" | wpbcopy
+    assertEquals 0 $?
+    assertEquals "aaa bbb ccc" "$(wpbpaste)"
+}
+
 test_include_new_lines () {
     seq 1 256 | wpbcopy
     assertEquals 0 $?
