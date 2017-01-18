@@ -13,8 +13,8 @@ source "$WPB_DIR"/wpb.sh
     TRANS_URL=$(curl -s "$CLIP_NET/$ID_PREFIX/$WPB_ID" | xmllint --html --xpath '/html/body/div/div/textarea/text()' - 2> /dev/null) || `echo ""`
     if [ "$TRANS_URL" = "" ]; then
         [ -f "$LASTPASTE_PATH" ] || exit 1
-        echo "(Pasting the last paste)" >&2
         unspin
+        echo "(Pasting the last paste)" >&2
         cat "$LASTPASTE_PATH" | openssl aes-256-cbc -d -pass pass:$WPB_PASSWORD
         exit 0
     fi
