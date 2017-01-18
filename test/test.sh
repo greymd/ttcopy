@@ -34,6 +34,20 @@ test_include_whitespaces () {
     assertEquals "aaa bbb ccc" "$(wpbpaste)"
 }
 
+test_multiple_paste () {
+    echo "bbbb" | wpbcopy
+    assertEquals 0 $?
+
+    # First time
+    assertEquals "bbbb" "$(wpbpaste)"
+
+    # Second time
+    assertEquals "bbbb" "$(wpbpaste)"
+
+    # Third time
+    assertEquals "bbbb" "$(wpbpaste)"
+}
+
 test_include_new_lines () {
     seq 1 256 | wpbcopy
     assertEquals 0 $?
