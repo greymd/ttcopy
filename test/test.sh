@@ -1,13 +1,15 @@
 #!/bin/bash
+
 if [ -n "$ZSH_VERSION" ]; then
   # This is zsh
-  echo "Testing for zsh"
+  echo "Testing for zsh $ZSH_VERSION"
   SHUNIT_PARENT=$0
   setopt shwordsplit
 elif [ -n "$BASH_VERSION" ]; then
   # This is bash
-  echo "Testing for bash"
+  echo "Testing for bash $BASH_VERSION"
 fi
+
 TEST_DIR="$(dirname $0)"
 . "${TEST_DIR}/../wpb.sh"
 
