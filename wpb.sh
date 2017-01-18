@@ -10,14 +10,14 @@ CLIP_NET="https://cl1p.net"
 TRANSFER_SH="https://transfer.sh"
 
 unspin () {
-    tput cnorm # make the cursor visible
+    tput cnorm >&2 # make the cursor visible
     echo -n $'\r'"`tput el`" >&2
 }
 
 spin () {
     local pid=$1
     local message=$2
-    tput civis # make the cursor invisible
+    tput civis >&2 # make the cursor invisible
 
     yes "⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏" | tr ' ' '\n' | while read spin;
     do
