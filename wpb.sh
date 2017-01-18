@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Portable and reliable way to get the directory of this script.
+# Based on http://stackoverflow.com/a/246128
+# then added zsh support from http://stackoverflow.com/a/23259585 .
+WPB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
+
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
 LASTPASTE_PATH="${TMPDIR}/lastPaste"
@@ -45,50 +50,9 @@ is_env_ok () {
 }
 
 wpbcopy () {
-    cat - | (
-        is_env_ok || return -1
-
-        trap "kill 0; exit" SIGHUP SIGINT SIGQUIT SIGTERM
-
-        local TRANS_URL=$(curl -so- --upload-file <(cat | openssl aes-256-cbc -e -pass pass:$WPB_PASSWORD) $TRANSFER_SH/$WPB_ID );
-        curl -s -X POST "$CLIP_NET/$ID_PREFIX/$WPB_ID" --data "content=$TRANS_URL" > /dev/null
-        unspin
-        echo "Copied!" >&2
-    ) &
-
-    (
-        # Start as the subshell so it can simply "exit" in trap,
-        # with killing background process.
-
-        trap "kill $!; exit" SIGHUP SIGINT SIGQUIT SIGTERM
-        spin $! "Copying..."
-    )
+    WPB_ID="$WPB_ID" WPB_PASSWORD="$WPB_PASSWORD" "$WPB_DIR"/wpbcopy.sh
 }
 
 wpbpaste () {
-    (
-        is_env_ok || return -1
-
-        trap "kill 0; exit" SIGHUP SIGINT SIGQUIT SIGTERM
-
-        local TRANS_URL=$(curl -s "$CLIP_NET/$ID_PREFIX/$WPB_ID" | xmllint --html --xpath '/html/body/div/div/textarea/text()' - 2> /dev/null) || ""
-        if [ "$TRANS_URL" = "" ]; then
-            [ -f "$LASTPASTE_PATH" ] || return 1
-            echo "(Pasting the last paste)" >&2
-            unspin
-            cat "$LASTPASTE_PATH" | openssl aes-256-cbc -d -pass pass:$WPB_PASSWORD
-            return 0
-        fi
-        curl -so- "$TRANS_URL" > "$LASTPASTE_PATH"
-        unspin
-        cat "$LASTPASTE_PATH" | openssl aes-256-cbc -d -pass pass:$WPB_PASSWORD
-    ) &
-
-    (
-        # Start as the subshell so it can simply "exit" in trap,
-        # with killing background process.
-
-        trap "kill $!; exit" SIGHUP SIGINT SIGQUIT SIGTERM
-        spin $! "Pasting..."
-    )
+    WPB_ID="$WPB_ID" WPB_PASSWORD="$WPB_PASSWORD" "$WPB_DIR"/wpbpaste.sh
 }
