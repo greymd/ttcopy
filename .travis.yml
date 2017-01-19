@@ -10,10 +10,12 @@ env:
   - SH=zsh
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then if [[ ! $(which $SH) ]] ; then sudo apt-get -qq update     ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then if [[ ! $(which $SH) ]] ; then sudo apt-get install -y $SH ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]];   then if [[ ! $(which $SH) ]] ; then brew update                 ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]];   then if [[ ! $(which $SH) ]] ; then brew install $SH            ; fi ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then if [[ ! $(which $SH) ]] ; then sudo apt-get -qq update        ; fi ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then if [[ ! $(which $SH) ]] ; then sudo apt-get install -y $SH    ; fi ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then if [[ ! $(which nc) ]]  ; then sudo apt-get install -y netcat ; fi ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]   ; then if [[ ! $(which $SH) ]] ; then brew update                    ; fi ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]   ; then if [[ ! $(which $SH) ]] ; then brew install $SH               ; fi ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]   ; then if [[ ! $(which nc) ]]  ; then brew install netcat            ; fi ; fi
 
 before_script:
   - export TMPDIR=$TRAVIS_BUILD_DIR/tmp # Default TMPDIR is not writable on Travis CI

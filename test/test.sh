@@ -26,6 +26,14 @@ setUp () {
     WPB_PASSWORD="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
 }
 
+# Mockserver for c1ip.net
+# It returns url `http://example.com/URL404/file.txt`
+# which is supposed to have 404 http status.
+cl1pMockserver () {
+    local port=$1
+    printf "HTTP/1.0 200 Ok\n\nhttp://example.com/URL404/file.txt" | nc -l $port
+}
+
 test_copy_transfer_sh_dead () {
     echo "aaaa" | tr -d '\n' | TRANSFER_SH="$TRANSFER_SH_NG" wpbcopy
     assertEquals 128 $?
@@ -41,14 +49,18 @@ test_paste_clip_net_dead () {
     assertEquals 129 $?
 }
 
-# FIXME: There's no way to change `TRANS_URL` got from cl1p, so we cannot
-#        the the case the transfer.sh was gone during pasting
-# test_paste_transfer_sh_dead () {
-#     ...
-# }
+# `netcat` is necessary to run this test.
+test_paste_transfer_sh_dead () {
+    local port=10000
+    # Run mock server to simulate c1ip.net with 10000 port.
+    cl1pMockserver $port > /dev/null 2>&1 &
+    CLIP_NET="http://localhost:$port" TRANSFER_SH="http://example.com" wpbpaste
+    assertEquals 128 $?
+}
 
 test_lack_dependency () {
-    local errMsg=$(echo aaa | DEPENDENCIES="hoge curl" wpbcopy 2>&1 )
+    # It fails, if there is `hogehogeoppaipai` command.
+    echo aaa | DEPENDENCIES="hogehogeoppaipai curl" wpbcopy 2>&1
     assertEquals 255 $?
 }
 
