@@ -14,6 +14,28 @@ ID_PREFIX="wpbcopy"
 CLIP_NET="https://cl1p.net"
 TRANSFER_SH="https://transfer.sh"
 
+makePipe () {
+    PIPEDIR="$(mktemp -d)" || exit -2;
+    PIPE="${PIPEDIR}/pipe"
+    mkfifo "$PIPE" || exit -2;
+}
+
+cleanPipe () {
+    rm -r "$PIPEDIR"
+}
+
+exit_ () {
+    local code=$1
+    echo $code > "$PIPE" &
+    exit
+}
+
+waitExitcode () {
+    local code=$(cat "$PIPE")
+    cleanPipe
+    return $code
+}
+
 unspin () {
     tput cnorm >&2 # make the cursor visible
     echo -n $'\r'"`tput el`" >&2
