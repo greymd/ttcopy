@@ -32,7 +32,7 @@ cat - | (
     exit_ 0
 ) &
 
-trap "kill 0; exit -2" SIGHUP SIGINT SIGQUIT SIGTERM
+trap "kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
 spin $! "Copying..."
 
 exit $(waitExitcode)
