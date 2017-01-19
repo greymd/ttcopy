@@ -3,14 +3,15 @@
 if [ -n "$ZSH_VERSION" ]; then
   # This is zsh
   echo "Testing for zsh $ZSH_VERSION"
-  SHUNIT_PARENT=$0
+  # Following two lines are necessary to run shuni2 with zsh
+  SHUNIT_PARENT="$0"
   setopt shwordsplit
 elif [ -n "$BASH_VERSION" ]; then
   # This is bash
   echo "Testing for bash $BASH_VERSION"
 fi
 
-TEST_DIR="$(dirname $0)"
+TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 . "${TEST_DIR}/../wpb.sh"
 
 CLIP_NET_NG="https://example.com"
@@ -45,6 +46,11 @@ test_paste_clip_net_dead () {
 # test_paste_transfer_sh_dead () {
 #     ...
 # }
+
+test_lack_dependency () {
+    local errMsg=$(echo aaa | DEPENDENCIES="hoge curl" wpbcopy 2>&1 )
+    assertEquals 255 $?
+}
 
 test_simple_string () {
     echo "aaaa" | tr -d '\n' | wpbcopy
