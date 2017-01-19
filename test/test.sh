@@ -13,6 +13,9 @@ fi
 TEST_DIR="$(dirname $0)"
 . "${TEST_DIR}/../wpb.sh"
 
+CLIP_NET_NG="https://example.com"
+TRANSFER_SH_NG="https://example.com"
+
 WPB_ID=""
 WPB_PASSWORD=""
 
@@ -21,6 +24,27 @@ setUp () {
     WPB_ID="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
     WPB_PASSWORD="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
 }
+
+test_copy_transfer_sh_dead () {
+    echo "aaaa" | tr -d '\n' | TRANSFER_SH="$TRANSFER_SH_NG" wpbcopy
+    assertEquals 128 $?
+}
+
+test_copy_clip_net_dead () {
+    echo "aaaa" | tr -d '\n' | CLIP_NET="$CLIP_NET_NG" wpbcopy
+    assertEquals 129 $?
+}
+
+test_paste_clip_net_dead () {
+    CLIP_NET="$CLIP_NET_NG" wpbpaste
+    assertEquals 129 $?
+}
+
+# FIXME: There's no way to change `TRANS_URL` got from cl1p, so we cannot
+#        the the case the transfer.sh was gone during pasting
+# test_paste_transfer_sh_dead () {
+#     ...
+# }
 
 test_simple_string () {
     echo "aaaa" | tr -d '\n' | wpbcopy
