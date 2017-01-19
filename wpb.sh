@@ -14,8 +14,12 @@ ID_PREFIX="wpbcopy"
 CLIP_NET="${CLIP_NET:-https://cl1p.net}"
 TRANSFER_SH="${TRANSFER_SH:-https://transfer.sh}"
 
+# Dependent commands (non POSIX commands)
+DEPENDENCIES="${DEPENDENCIES:-yes openssl curl perl mktemp}"
+
 makePipe () {
-    PIPEDIR="$(mktemp -d)" || exit -2;
+    # `mktemp -d` does not work with BSD's mktemp
+    PIPEDIR="$(mktemp -d -t XXXXXXXXXX)" || exit -2;
     PIPE="${PIPEDIR}/pipe"
     mkfifo "$PIPE" || exit -2;
 }
@@ -59,13 +63,14 @@ spin () {
 }
 
 is_env_ok () {
-    echo "openssl curl" | xargs -n 1 | while read cmd ; do
-        type $cmd > /dev/null
+    while read cmd ; do
+        type $cmd > /dev/null 2>&1
         if [ $? -ne 0 ]; then
             echo "$cmd is required to work." >&2
             return -1
         fi
-    done
+    done < <(echo "$DEPENDENCIES" | tr ' ' '\n')
+
     [ -z "$WPB_ID" ] && echo "Set environment variable (WPB_ID)." >&2 && return -1
     [ -z "$WPB_PASSWORD" ] && echo "Set environment variable (WPB_PASSWORD)." >&2 && return -1
     return 0
