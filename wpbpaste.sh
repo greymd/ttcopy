@@ -10,7 +10,8 @@ source "$WPB_DIR"/wpb.sh
 (
     is_env_ok || exit -1
 
-    TRANS_URL=$(curl -s "$CLIP_NET/$ID_PREFIX/$WPB_ID" | xmllint --html --xpath '/html/body/div/div/textarea/text()' - 2> /dev/null) || `echo ""`
+    # Use only (extended) regular expression compatible with POSIX.
+    TRANS_URL=$(curl -s "$CLIP_NET/$ID_PREFIX/$WPB_ID" | sed 's/<[^>]*>//g' | grep -E "${TRANSFER_SH}/[^/]+/.+" | head -n 1 2> /dev/null) || $(echo "")
     if [ "$TRANS_URL" = "" ]; then
         [ -f "$LASTPASTE_PATH" ] || exit 1
         unspin
