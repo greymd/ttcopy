@@ -11,8 +11,8 @@ LASTPASTE_PATH="${TMPDIR}/lastPaste"
 ID_PREFIX="wpbcopy"
 
 # Dependent services
-CLIP_NET="https://cl1p.net"
-TRANSFER_SH="https://transfer.sh"
+CLIP_NET="${CLIP_NET:-https://cl1p.net}"
+TRANSFER_SH="${TRANSFER_SH:-https://transfer.sh}"
 
 makePipe () {
     PIPEDIR="$(mktemp -d)" || exit -2;
