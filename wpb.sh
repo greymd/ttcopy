@@ -40,7 +40,7 @@ is_env_ok () {
     echo "openssl curl xmllint" | xargs -n 1 | while read cmd ; do
         type $cmd > /dev/null
         if [ $? -ne 0 ]; then
-            echo "$cmd is required to work."
+            echo "$cmd is required to work." >&2
             return -1
         fi
     done
