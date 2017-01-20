@@ -15,51 +15,32 @@ CLIP_NET="${CLIP_NET:-https://cl1p.net}"
 TRANSFER_SH="${TRANSFER_SH:-https://transfer.sh}"
 
 # Dependent commands (non POSIX commands)
-DEPENDENCIES="${DEPENDENCIES:-yes openssl curl perl mktemp}"
-
-makePipe () {
-    # `mktemp -d` does not work with BSD's mktemp
-    PIPEDIR="$(mktemp -d -t XXXXXXXXXX)" || exit -2;
-    PIPE="${PIPEDIR}/pipe"
-    mkfifo "$PIPE" || exit -2;
-}
-
-cleanPipe () {
-    rm -r "$PIPEDIR"
-}
-
-exit_ () {
-    local code=$1
-    echo $code > "$PIPE" &
-    exit
-}
-
-waitExitcode () {
-    local code=$(cat "$PIPE")
-    cleanPipe
-    return $code
-}
+DEPENDENCIES="${DEPENDENCIES:-yes openssl curl perl}"
 
 unspin () {
+    kill $SPIN_PID
     tput cnorm >&2 # make the cursor visible
     echo -n $'\r'"`tput el`" >&2
 }
 
 spin () {
-    local pid=$1
-    local message=$2
+    local message=$1
     tput civis >&2 # make the cursor invisible
 
-    yes "⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏" | tr ' ' '\n' | while read spin;
-    do
-        kill -0 $pid 2> /dev/null
-        if [ $? -ne 0 ]; then
-            exit;
-        fi
+    (
+        # Use process substitution instead of the pipe
+        # (i.e. `yes "..." | tr ' ' '\n' | while read spin;`)
+        # to give the `spin`, in order to avoid creating sub-shell.
+        # It could cause the loops be zombie and unable to break it.
 
-        echo -n "$spin $message "$'\r' >&2
-        perl -e 'select(undef, undef, undef, 0.25)' # sleep 0.25s
-    done
+        while read spin;
+        do
+            echo -n "$spin $message "$'\r' >&2
+            perl -e 'select(undef, undef, undef, 0.25)' # sleep 0.25s
+        done < <(yes "⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏" | tr ' ' '\n')
+    )&
+
+    SPIN_PID=$!
 }
 
 is_env_ok () {
