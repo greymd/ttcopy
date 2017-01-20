@@ -67,12 +67,14 @@ is_env_ok () {
         type $cmd > /dev/null 2>&1
         if [ $? -ne 0 ]; then
             echo "$cmd is required to work." >&2
-            return -1
+            # `return -1` does not work in particular situation. `-1` is recognized as an option.
+            # After `--`, any arguments are not interpreted as option.
+            return -- -1
         fi
     done < <(echo "$DEPENDENCIES" | tr ' ' '\n')
 
-    [ -z "$WPB_ID" ] && echo "Set environment variable (WPB_ID)." >&2 && return -1
-    [ -z "$WPB_PASSWORD" ] && echo "Set environment variable (WPB_PASSWORD)." >&2 && return -1
+    [ -z "$WPB_ID" ] && echo "Set environment variable (WPB_ID)." >&2 && return -- -1
+    [ -z "$WPB_PASSWORD" ] && echo "Set environment variable (WPB_PASSWORD)." >&2 && return -- -1
     return 0
 }
 

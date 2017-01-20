@@ -20,6 +20,7 @@ TRANSFER_SH_NG="https://example.com"
 WPB_ID=""
 WPB_PASSWORD=""
 
+# It is called before each tests.
 setUp () {
     # Set random id/password
     WPB_ID="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
@@ -60,7 +61,17 @@ test_paste_transfer_sh_dead () {
 
 test_lack_dependency () {
     # It fails, if there is `hogehogeoppaipai` command.
-    echo aaa | DEPENDENCIES="hogehogeoppaipai curl" wpbcopy 2>&1
+    echo aaa | DEPENDENCIES="hogehogeoppaipai curl" wpbcopy
+    assertEquals 255 $?
+}
+
+test_unset_id () {
+    echo aaa | WPB_ID="" wpbcopy
+    assertEquals 255 $?
+}
+
+test_unset_password () {
+    echo aaa | WPB_PASSWORD="" wpbcopy
     assertEquals 255 $?
 }
 
