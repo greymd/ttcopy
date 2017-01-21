@@ -26,7 +26,7 @@ TRANS_URL=$(echo "$CLIP_BODY" |
 if [ "$TRANS_URL" = "" ]; then
     [ -f "$LASTPASTE_PATH" ] ||
         { unspin;
-          echo "Nothing has been copied yet.";
+          echo "Nothing has been copied yet." >&2;
           exit 1; }
 
     unspin
