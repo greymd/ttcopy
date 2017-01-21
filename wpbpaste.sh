@@ -20,7 +20,8 @@ makePipe
     fi
 
     TRANS_URL=$(echo "$CLIP_BODY" |
-                       xmllint --html --xpath '/html/body/div/div/textarea/text()' - 2> /dev/null)
+                        # Use only (extended) regular expression compatible with POSIX.
+                       sed 's/<[^>]*>//g' | grep -E "${TRANSFER_SH}/[^/]+/.+" | head -n 1 2> /dev/null)
 
     if [ "$TRANS_URL" = "" ]; then
         [ -f "$LASTPASTE_PATH" ] ||

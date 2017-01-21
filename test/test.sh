@@ -3,14 +3,15 @@
 if [ -n "$ZSH_VERSION" ]; then
   # This is zsh
   echo "Testing for zsh $ZSH_VERSION"
-  SHUNIT_PARENT=$0
+  # Following two lines are necessary to run shuni2 with zsh
+  SHUNIT_PARENT="$0"
   setopt shwordsplit
 elif [ -n "$BASH_VERSION" ]; then
   # This is bash
   echo "Testing for bash $BASH_VERSION"
 fi
 
-TEST_DIR="$(dirname $0)"
+TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 . "${TEST_DIR}/../wpb.sh"
 
 CLIP_NET_NG="https://example.com"
@@ -19,10 +20,19 @@ TRANSFER_SH_NG="https://example.com"
 WPB_ID=""
 WPB_PASSWORD=""
 
+# It is called before each tests.
 setUp () {
     # Set random id/password
     WPB_ID="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
     WPB_PASSWORD="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
+}
+
+# Mockserver for c1ip.net
+# It returns url `http://example.com/URL404/file.txt`
+# which is supposed to have 404 http status.
+cl1pMockserver () {
+    local port=$1
+    printf "HTTP/1.0 200 Ok\n\nhttp://example.com/URL404/file.txt" | nc -l $port
 }
 
 test_copy_transfer_sh_dead () {
@@ -40,11 +50,30 @@ test_paste_clip_net_dead () {
     assertEquals 129 $?
 }
 
-# FIXME: There's no way to change `TRANS_URL` got from cl1p, so we cannot
-#        the the case the transfer.sh was gone during pasting
-# test_paste_transfer_sh_dead () {
-#     ...
-# }
+# `netcat` is necessary to run this test.
+test_paste_transfer_sh_dead () {
+    local port=10000
+    # Run mock server to simulate c1ip.net with 10000 port.
+    cl1pMockserver $port > /dev/null 2>&1 &
+    CLIP_NET="http://localhost:$port" TRANSFER_SH="http://example.com" wpbpaste
+    assertEquals 128 $?
+}
+
+test_lack_dependency () {
+    # It fails, if there is `hogehogeoppaipai` command.
+    echo aaa | DEPENDENCIES="hogehogeoppaipai curl" wpbcopy
+    assertEquals 255 $?
+}
+
+test_unset_id () {
+    echo aaa | WPB_ID="" wpbcopy
+    assertEquals 255 $?
+}
+
+test_unset_password () {
+    echo aaa | WPB_PASSWORD="" wpbcopy
+    assertEquals 255 $?
+}
 
 test_simple_string () {
     echo "aaaa" | tr -d '\n' | wpbcopy
