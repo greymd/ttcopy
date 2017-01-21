@@ -14,8 +14,8 @@ fi
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 . "${TEST_DIR}/../wpb.sh"
 
-CLIP_NET_NG="https://example.com"
-TRANSFER_SH_NG="https://example.com"
+WPB_CLIP_NET_NG="https://example.com"
+WPB_TRANSFER_SH_NG="https://example.com"
 
 WPB_ID=""
 WPB_PASSWORD=""
@@ -36,17 +36,17 @@ cl1pMockserver () {
 }
 
 test_copy_transfer_sh_dead () {
-    echo "aaaa" | tr -d '\n' | TRANSFER_SH="$TRANSFER_SH_NG" wpbcopy
+    echo "aaaa" | tr -d '\n' | WPB_TRANSFER_SH="$WPB_TRANSFER_SH_NG" wpbcopy
     assertEquals 128 $?
 }
 
 test_copy_clip_net_dead () {
-    echo "aaaa" | tr -d '\n' | CLIP_NET="$CLIP_NET_NG" wpbcopy
+    echo "aaaa" | tr -d '\n' | WPB_CLIP_NET="$WPB_CLIP_NET_NG" wpbcopy
     assertEquals 129 $?
 }
 
 test_paste_clip_net_dead () {
-    CLIP_NET="$CLIP_NET_NG" wpbpaste
+    WPB_CLIP_NET="$WPB_CLIP_NET_NG" wpbpaste
     assertEquals 129 $?
 }
 
@@ -55,13 +55,13 @@ test_paste_transfer_sh_dead () {
     local port=10000
     # Run mock server to simulate c1ip.net with 10000 port.
     cl1pMockserver $port > /dev/null 2>&1 &
-    CLIP_NET="http://localhost:$port" TRANSFER_SH="http://example.com" wpbpaste
+    WPB_CLIP_NET="http://localhost:$port" WPB_TRANSFER_SH="http://example.com" wpbpaste
     assertEquals 128 $?
 }
 
 test_lack_dependency () {
     # It fails, if there is `hogehogeoppaipai` command.
-    echo aaa | DEPENDENCIES="hogehogeoppaipai curl" wpbcopy
+    echo aaa | _WPB_DEPENDENCIES="hogehogeoppaipai curl" wpbcopy
     assertEquals 255 $?
 }
 
