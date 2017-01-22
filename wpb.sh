@@ -3,27 +3,27 @@
 # Portable and reliable way to get the directory of this script.
 # Based on http://stackoverflow.com/a/246128
 # then added zsh support from http://stackoverflow.com/a/23259585 .
-WPB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
+_WPB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
+
+# Dependent commands (non POSIX commands)
+_WPB_DEPENDENCIES="${_WPB_DEPENDENCIES:-yes openssl curl perl}"
 
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
-LASTPASTE_PATH="${TMPDIR}/lastPaste"
-ID_PREFIX="wpbcopy"
+WPB_LASTPASTE_PATH="${TMPDIR}/lastPaste"
+WPB_ID_PREFIX="wpbcopy"
 
 # Dependent services
-CLIP_NET="${CLIP_NET:-https://cl1p.net}"
-TRANSFER_SH="${TRANSFER_SH:-https://transfer.sh}"
+WPB_CLIP_NET="${WPB_CLIP_NET:-https://cl1p.net}"
+WPB_TRANSFER_SH="${WPB_TRANSFER_SH:-https://transfer.sh}"
 
-# Dependent commands (non POSIX commands)
-DEPENDENCIES="${DEPENDENCIES:-yes openssl curl perl}"
-
-unspin () {
-    kill $SPIN_PID
+__wpb::unspin () {
+    kill $_WPB_SPIN_PID
     tput cnorm >&2 # make the cursor visible
     echo -n $'\r'"`tput el`" >&2
 }
 
-spin () {
+__wpb::spin () {
     local message=$1
     tput civis >&2 # make the cursor invisible
 
@@ -40,10 +40,10 @@ spin () {
         done < <(yes "⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏" | tr ' ' '\n')
     )&
 
-    SPIN_PID=$!
+    _WPB_SPIN_PID=$!
 }
 
-is_env_ok () {
+__wpb::is_env_ok () {
     while read cmd ; do
         type $cmd > /dev/null 2>&1
         if [ $? -ne 0 ]; then
@@ -52,7 +52,7 @@ is_env_ok () {
             # After `--`, any arguments are not interpreted as option.
             return -- -1
         fi
-    done < <(echo "$DEPENDENCIES" | tr ' ' '\n')
+    done < <(echo "$_WPB_DEPENDENCIES" | tr ' ' '\n')
 
     [ -z "$WPB_ID" ] && echo "Set environment variable (WPB_ID)." >&2 && return -- -1
     [ -z "$WPB_PASSWORD" ] && echo "Set environment variable (WPB_PASSWORD)." >&2 && return -- -1
@@ -60,9 +60,9 @@ is_env_ok () {
 }
 
 wpbcopy () {
-    WPB_ID="$WPB_ID" WPB_PASSWORD="$WPB_PASSWORD" "$WPB_DIR"/wpbcopy.sh
+    WPB_ID="$WPB_ID" WPB_PASSWORD="$WPB_PASSWORD" "$_WPB_DIR"/wpbcopy.sh
 }
 
 wpbpaste () {
-    WPB_ID="$WPB_ID" WPB_PASSWORD="$WPB_PASSWORD" "$WPB_DIR"/wpbpaste.sh
+    WPB_ID="$WPB_ID" WPB_PASSWORD="$WPB_PASSWORD" "$_WPB_DIR"/wpbpaste.sh
 }
