@@ -1,5 +1,5 @@
-# wpbcopy
-Provide copying and pasting to the pasteboard through the Web
+# Trans-Terminal Copy/Paste
+Provide copying and pasting within multiple hosts through the Web.
 
 # Environment
   * zsh
@@ -17,20 +17,20 @@ Add this line to `.zshrc`.
 
 ```sh
 # Set ID and PASSWORD **AS YOU LIKE**.
-WPB_ID="your_id"
-WPB_PASSWORD="your_password"
+TTCP_ID="your_id"
+TTCP_PASSWORD="your_password"
 
-zplug "greymd/wpbcopy"
+zplug "greymd/ttcopy"
 ```
 
 ## zsh, bash
 
 ```sh
 # Set ID and PASSWORD **AS YOU LIKE**.
-WPB_ID="your_id"
-WPB_PASSWORD="your_password"
+TTCP_ID="your_id"
+TTCP_PASSWORD="your_password"
 
-source wpb.sh
+source ttcp.sh
 ```
 
 # Examples
@@ -38,16 +38,16 @@ source wpb.sh
 * copy & paste
 
 ```sh
-$ echo foobar | wpbcopy
-$ wpbpaste
+$ echo foobar | ttcopy
+$ ttpaste
 foobar
 ```
 
 * binary data is processed as it is.
 
 ```sh
-$ cat image.jpg| wpbcopy
-$ wpbpaste | file -
+$ cat image.jpg| ttcopy
+$ ttpaste | file -
 /dev/stdin: JPEG image data, JFIF standard 1.01
 ```
 
