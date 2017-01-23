@@ -3,27 +3,27 @@
 # Portable and reliable way to get the directory of this script.
 # Based on http://stackoverflow.com/a/246128
 # then added zsh support from http://stackoverflow.com/a/23259585 .
-_WPB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
+_TTCP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 
 # Dependent commands (non POSIX commands)
-_WPB_DEPENDENCIES="${_WPB_DEPENDENCIES:-yes openssl curl perl}"
+_TTCP_DEPENDENCIES="${_TTCP_DEPENDENCIES:-yes openssl curl perl}"
 
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
-WPB_LASTPASTE_PATH="${TMPDIR}/lastPaste"
-WPB_ID_PREFIX="wpbcopy"
+TTCP_LASTPASTE_PATH="${TMPDIR}/lastPaste"
+TTCP_ID_PREFIX="ttcopy"
 
 # Dependent services
-WPB_CLIP_NET="${WPB_CLIP_NET:-https://cl1p.net}"
-WPB_TRANSFER_SH="${WPB_TRANSFER_SH:-https://transfer.sh}"
+TTCP_CLIP_NET="${TTCP_CLIP_NET:-https://cl1p.net}"
+TTCP_TRANSFER_SH="${TTCP_TRANSFER_SH:-https://transfer.sh}"
 
-__wpb::unspin () {
-    kill $_WPB_SPIN_PID
+__ttcp::unspin () {
+    kill $_TTCP_SPIN_PID
     tput cnorm >&2 # make the cursor visible
     echo -n $'\r'"`tput el`" >&2
 }
 
-__wpb::spin () {
+__ttcp::spin () {
     local message=$1
     tput civis >&2 # make the cursor invisible
 
@@ -40,10 +40,10 @@ __wpb::spin () {
         done < <(yes "⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏" | tr ' ' '\n')
     )&
 
-    _WPB_SPIN_PID=$!
+    _TTCP_SPIN_PID=$!
 }
 
-__wpb::is_env_ok () {
+__ttcp::is_env_ok () {
     while read cmd ; do
         type $cmd > /dev/null 2>&1
         if [ $? -ne 0 ]; then
@@ -52,17 +52,17 @@ __wpb::is_env_ok () {
             # After `--`, any arguments are not interpreted as option.
             return -- -1
         fi
-    done < <(echo "$_WPB_DEPENDENCIES" | tr ' ' '\n')
+    done < <(echo "$_TTCP_DEPENDENCIES" | tr ' ' '\n')
 
-    [ -z "$WPB_ID" ] && echo "Set environment variable (WPB_ID)." >&2 && return -- -1
-    [ -z "$WPB_PASSWORD" ] && echo "Set environment variable (WPB_PASSWORD)." >&2 && return -- -1
+    [ -z "$TTCP_ID" ] && echo "Set environment variable (TTCP_ID)." >&2 && return -- -1
+    [ -z "$TTCP_PASSWORD" ] && echo "Set environment variable (TTCP_PASSWORD)." >&2 && return -- -1
     return 0
 }
 
-wpbcopy () {
-    WPB_ID="$WPB_ID" WPB_PASSWORD="$WPB_PASSWORD" "$_WPB_DIR"/wpbcopy.sh
+ttcopy () {
+    TTCP_ID="$TTCP_ID" TTCP_PASSWORD="$TTCP_PASSWORD" "$_TTCP_DIR"/ttcopy.sh
 }
 
-wpbpaste () {
-    WPB_ID="$WPB_ID" WPB_PASSWORD="$WPB_PASSWORD" "$_WPB_DIR"/wpbpaste.sh
+ttpaste () {
+    TTCP_ID="$TTCP_ID" TTCP_PASSWORD="$TTCP_PASSWORD" "$_TTCP_DIR"/ttpaste.sh
 }
