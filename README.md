@@ -1,5 +1,5 @@
-# ttcopy
-Provide copying and pasting to the pasteboard through the Web
+# Trans-Terminal Copy/Paste
+Provide copying and pasting within multiple hosts through the Web.
 
 # Environment
   * zsh
