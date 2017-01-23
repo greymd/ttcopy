@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Version number of commands.
+# MAJOR.MINOR.PATCH
+readonly TTCP_VERSION="1.0.0"
+
 # Portable and reliable way to get the directory of this script.
 # Based on http://stackoverflow.com/a/246128
 # then added zsh support from http://stackoverflow.com/a/23259585 .
@@ -16,6 +20,10 @@ TTCP_ID_PREFIX="ttcopy"
 # Dependent services
 TTCP_CLIP_NET="${TTCP_CLIP_NET:-https://cl1p.net}"
 TTCP_TRANSFER_SH="${TTCP_TRANSFER_SH:-https://transfer.sh}"
+
+__ttcp::version () {
+    echo "${TTCP_VERSION}"
+}
 
 __ttcp::unspin () {
     kill $_TTCP_SPIN_PID
