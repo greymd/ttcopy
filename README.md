@@ -17,7 +17,7 @@ Provide copying and pasting within multiple hosts through the Web.
 # Install
 First of all, please prepare ID and Password **as you like**.
 Do not be lazy. You are **NOT** required to register them on any services.
-Same data source (like clipboard) is shared within the hosts having same ID/Password.
+The data you copied can be pasted within the hosts having same ID/Password.
 
 After that, set up `ttcopy` on the hosts which you want to make share same data source.
 Please follow the following instructions to install it.
