@@ -75,6 +75,31 @@ test_unset_password () {
     assertEquals 255 $?
 }
 
+test_version () {
+    # Version number consists major.minor.patch
+    ttcopy -V | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
+    assertEquals 0 $?
+    ttcopy --version | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
+    assertEquals 0 $?
+    ttpaste -V | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
+    assertEquals 0 $?
+    ttpaste --version | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
+    assertEquals 0 $?
+    # Same version
+    assertEquals "$(ttcopy -V)" "$(ttpaste -V)"
+}
+
+test_usage () {
+    ttcopy -h | grep -E 'Usage: ttcopy'
+    assertEquals 0 $?
+    ttcopy --help | grep -E 'Usage: ttcopy'
+    assertEquals 0 $?
+    ttpaste -h | grep -E 'Usage: ttpaste'
+    assertEquals 0 $?
+    ttpaste --help | grep -E 'Usage: ttpaste'
+    assertEquals 0 $?
+}
+
 test_simple_string () {
     echo "aaaa" | tr -d '\n' | ttcopy
     assertEquals 0 $?

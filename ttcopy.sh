@@ -9,6 +9,7 @@ source "$_TTCP_DIR"/ttcp.sh
 __ttcp::is_env_ok || exit -1
 
 trap "kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
+__ttcp::opts "$@"
 __ttcp::spin "Copying..."
 
 TRANS_URL=$(curl -so- --fail --upload-file <(cat | openssl aes-256-cbc -e -pass pass:$TTCP_PASSWORD) $TTCP_TRANSFER_SH/$TTCP_ID );
