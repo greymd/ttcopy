@@ -4,6 +4,8 @@
 
 Provide copying and pasting within multiple hosts through the Web.
 
+![Introduction Image](./img/ttcp_intro_img.png)
+
 # Environment
   * zsh (tested ver: 4.3, 5.0)
   * bash (tested vern: 3.2, 4.2)
