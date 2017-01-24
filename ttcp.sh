@@ -73,7 +73,7 @@ __ttcp::opts () {
 }
 
 __ttcp::unspin () {
-    kill $_TTCP_SPIN_PID
+    kill $_TTCP_SPIN_PID 2> /dev/null
     tput cnorm >&2 # make the cursor visible
     echo -n $'\r'"`tput el`" >&2
 }
