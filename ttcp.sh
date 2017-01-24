@@ -2,7 +2,7 @@
 
 # Version number of commands.
 # MAJOR.MINOR.PATCH
-readonly TTCP_VERSION="0.0.0"
+readonly TTCP_VERSION="1.0.0"
 
 # Portable and reliable way to get the directory of this script.
 # Based on http://stackoverflow.com/a/246128
