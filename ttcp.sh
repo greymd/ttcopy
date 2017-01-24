@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Version number of commands.
+# MAJOR.MINOR.PATCH
+readonly TTCP_VERSION="0.0.0"
+
 # Portable and reliable way to get the directory of this script.
 # Based on http://stackoverflow.com/a/246128
 # then added zsh support from http://stackoverflow.com/a/23259585 .
@@ -17,8 +21,59 @@ TTCP_ID_PREFIX="ttcopy"
 TTCP_CLIP_NET="${TTCP_CLIP_NET:-https://cl1p.net}"
 TTCP_TRANSFER_SH="${TTCP_TRANSFER_SH:-https://transfer.sh}"
 
+__ttcp::version () {
+    echo "${TTCP_VERSION}"
+}
+
+__ttcp::usage () {
+    # Get a filename calling the function.
+    # http://stackoverflow.com/a/192319/
+    local _file="${0##*/}"
+    # Remove file's extention
+    local _cmd="${_file%.*}"
+
+    echo "  Usage: $_cmd [OPTIONS]"
+    echo
+    echo "  OPTIONS:"
+    echo "  -h, --help       Output a usage message and exit."
+    echo "  -V, --version    Output the version number of $_cmd and exit."
+}
+
+__ttcp::opts () {
+    # This way supports options which consist continuous letters (like `-Vh`).
+    # http://qiita.com/b4b4r07/items/dcd6be0bb9c9185475bb
+    while (( $# > 0 ))
+    do
+        case "$1" in
+
+            # Long options
+            --help)
+                __ttcp::usage
+                exit 0
+                ;;
+            --version)
+                __ttcp::version
+                exit 0
+                ;;
+
+            # Short options
+            -*)
+                if [[ "$1" =~ 'h' ]]; then
+                    __ttcp::usage
+                    exit 0
+                fi
+                if [[ "$1" =~ 'V' ]]; then
+                    __ttcp::version
+                    exit 0
+                fi
+                shift
+                ;;
+        esac
+    done
+}
+
 __ttcp::unspin () {
-    kill $_TTCP_SPIN_PID
+    kill $_TTCP_SPIN_PID 2> /dev/null
     tput cnorm >&2 # make the cursor visible
     echo -n $'\r'"`tput el`" >&2
 }
@@ -60,9 +115,9 @@ __ttcp::is_env_ok () {
 }
 
 ttcopy () {
-    TTCP_ID="$TTCP_ID" TTCP_PASSWORD="$TTCP_PASSWORD" "$_TTCP_DIR"/ttcopy.sh
+    TTCP_ID="$TTCP_ID" TTCP_PASSWORD="$TTCP_PASSWORD" "$_TTCP_DIR"/ttcopy.sh "$@"
 }
 
 ttpaste () {
-    TTCP_ID="$TTCP_ID" TTCP_PASSWORD="$TTCP_PASSWORD" "$_TTCP_DIR"/ttpaste.sh
+    TTCP_ID="$TTCP_ID" TTCP_PASSWORD="$TTCP_PASSWORD" "$_TTCP_DIR"/ttpaste.sh "$@"
 }

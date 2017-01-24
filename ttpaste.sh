@@ -9,7 +9,8 @@ source "$_TTCP_DIR"/ttcp.sh
 
 __ttcp::is_env_ok || exit -1
 
-trap "kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
+trap "__ttcp::unspin; kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
+__ttcp::opts "$@"
 __ttcp::spin "Pasting..."
 
 CLIP_BODY=$(curl --fail -so- "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID" 2> /dev/null)
