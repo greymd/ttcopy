@@ -8,7 +8,7 @@ Provide copying and pasting within multiple hosts through the Web.
 
 # Environment
   * zsh (tested ver: 4.3, 5.0)
-  * bash (tested vern: 3.2, 4.2)
+  * bash (tested ver: 3.2, 4.2)
 
 ## Dependent commands
   * openssl
@@ -17,9 +17,9 @@ Provide copying and pasting within multiple hosts through the Web.
 # Install
 First of all, please prepare ID and Password **as you like**.
 Do not be lazy. You are **NOT** required to register them on any services.
-Same datasource (like clipboard) is shared within the hosts having same ID/Password.
+Same data source (like clipboard) is shared within the hosts having same ID/Password.
 
-After that, please install `ttcopy` to the hosts you want to make share datasource each other.
+After that, please install `ttcopy` to the hosts you want to make share data source each other.
 Please follow the following instructions to install.
 
 ## For Zsh & [zplug](zplug/zplug)
