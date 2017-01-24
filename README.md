@@ -19,8 +19,8 @@ First of all, please prepare ID and Password **as you like**.
 Do not be lazy. You are **NOT** required to register them on any services.
 Same data source (like clipboard) is shared within the hosts having same ID/Password.
 
-After that, please install `ttcopy` to the hosts you want to make share data source each other.
-Please follow the following instructions to install.
+After that, set up `ttcopy` on the hosts which you want to make share same data source.
+Please follow the following instructions to install it.
 
 ## For Zsh & [zplug](zplug/zplug)
 
@@ -34,7 +34,7 @@ TTCP_PASSWORD="your_password"
 zplug "greymd/ttcopy"
 ```
 
-## Zsh or Bash
+## For Zsh or Bash
 
 #### 1. Clone repository
 
@@ -69,7 +69,7 @@ $ ttpaste
 foobar
 ```
 
-### Binary data is processed as it is.
+### Clip binary data.
 
 * Host1
 ```sh
