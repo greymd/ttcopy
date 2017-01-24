@@ -1,4 +1,7 @@
 # Trans-Terminal Copy/Paste
+
+[![Build Status](https://travis-ci.org/greymd/ttcopy.svg?branch=master)](https://travis-ci.org/greymd/ttcopy)
+
 Provide copying and pasting within multiple hosts through the Web.
 
 # Environment
@@ -25,17 +28,27 @@ zplug "greymd/ttcopy"
 
 ## zsh, bash
 
+#### 1. Clone Repository
+
+```sh
+$ git clone https://github.com/greymd/ttcopy.git ~/ttcopy
+```
+
+#### 2. Edit `.bashrc` or `.zshrc`
+
+And add following lines.
+
 ```sh
 # Set ID and PASSWORD **AS YOU LIKE**.
 TTCP_ID="your_id"
 TTCP_PASSWORD="your_password"
 
-source ttcp.sh
+source ~/ttcopy/ttcp.sh
 ```
 
 # Examples
 
-* copy & paste
+### Copy & Paste
 
 ```sh
 $ echo foobar | ttcopy
@@ -43,10 +56,10 @@ $ ttpaste
 foobar
 ```
 
-* binary data is processed as it is.
+### Binary data is processed as it is.
 
 ```sh
-$ cat image.jpg| ttcopy
+$ cat image.jpg | ttcopy
 $ ttpaste | file -
 /dev/stdin: JPEG image data, JFIF standard 1.01
 ```
