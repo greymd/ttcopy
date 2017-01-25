@@ -14,7 +14,7 @@ _TTCP_DEPENDENCIES="${_TTCP_DEPENDENCIES:-yes openssl curl perl}"
 
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
-TTCP_LASTPASTE_PATH="${TMPDIR}/lastPaste"
+TTCP_LASTPASTE_PATH_PREFIX="${TMPDIR}/lastPaste_"
 TTCP_ID_PREFIX="ttcopy"
 
 # Dependent services

@@ -13,6 +13,7 @@ trap "__ttcp::unspin; kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
 __ttcp::opts "$@"
 __ttcp::spin "Pasting..."
 
+TTCP_LASTPASTE_PATH="${TTCP_LASTPASTE_PATH_PREFIX}${TTCP_ID}"
 CLIP_BODY=$(curl --fail -so- "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID" 2> /dev/null)
 if [ $? -ne 0 ]; then
     __ttcp::unspin
@@ -23,6 +24,7 @@ fi
 TRANS_URL=$(echo "$CLIP_BODY" |
                    # Use only (extended) regular expression compatible with POSIX.
                    sed 's/<[^>]*>//g' | grep -E "${TTCP_TRANSFER_SH}/[^/]+/.+" | head -n 1 2> /dev/null)
+
 
 if [ "$TRANS_URL" = "" ]; then
     [ -f "$TTCP_LASTPASTE_PATH" ] ||
