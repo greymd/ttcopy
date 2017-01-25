@@ -35,8 +35,10 @@ __ttcp::usage () {
     echo "  Usage: $_cmd [OPTIONS]"
     echo
     echo "  OPTIONS:"
-    echo "  -h, --help       Output a usage message and exit."
-    echo "  -V, --version    Output the version number of $_cmd and exit."
+    echo "  -h, --help                         Output a usage message and exit."
+    echo "  -V, --version                      Output the version number of $_cmd and exit."
+    echo "  -i ID, --id=ID                     Specify ID to identify the data."
+    echo "  -p PASSWORD, --password=PASSWORD   Specify Password to encrypt/decrypt the data."
 }
 
 __ttcp::opts () {
@@ -55,6 +57,14 @@ __ttcp::opts () {
                 __ttcp::version
                 exit 0
                 ;;
+            --id=*)
+                TTCP_ID="${1#--id=}"
+                shift
+                ;;
+            --password=*)
+                TTCP_PASSWORD="${1#--password=}"
+                shift
+                ;;
 
             # Short options
             -*)
@@ -66,8 +76,23 @@ __ttcp::opts () {
                     __ttcp::version
                     exit 0
                 fi
-                shift
+                if [[ "$1" =~ 'i' ]]; then
+                    TTCP_ID="$2"
+                    shift
+                    shift
+                elif [[ "$1" =~ 'p' ]]; then
+                    TTCP_PASSWORD="$2"
+                    shift
+                    shift
+                fi
                 ;;
+
+            # Other
+            *)
+                __ttcp::usage
+                exit 0
+                ;;
+
         esac
     done
 }
