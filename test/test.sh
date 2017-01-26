@@ -124,8 +124,6 @@ test_option_combination () {
 test_id_pass_given_by_arg () {
     TTCP_ID=""
     TTCP_PASSWORD=""
-    # FIXME: Test cases does not pass with long id/password like 64 characters.
-    #        Investigate the reason.
     local NEW_ID_1="$(dummyString)"
     local NEW_PASSWORD_1="$(dummyString)"
     local NEW_ID_2="$(dummyString)"
@@ -159,6 +157,20 @@ test_id_pass_given_by_arg () {
     assertEquals "I have a pineapple." "$(ttpaste --id="$NEW_ID_2" --password="$NEW_PASSWORD_2")"
 
     assertNotEquals "$(ttpaste -i "$NEW_ID_1" -p "$NEW_PASSWORD_1")" "$(ttpaste -i "$NEW_ID_2" -p "$NEW_PASSWORD_2")"
+
+    # Password is defined by the variable.
+    TTCP_ID=""
+    TTCP_PASSWORD="$(dummyString)"
+    echo "Apple Pen" | ttcopy -i "$NEW_ID_1"
+    assertEquals 0 $?
+    assertEquals "Apple Pen" "$(ttpaste -i "$NEW_ID_1")"
+
+    # ID is defined by the variable.
+    TTCP_ID="$(dummyString)"
+    TTCP_PASSWORD=""
+    echo "Pineapple Pen" | ttcopy -p "$NEW_PASSWORD_1"
+    assertEquals 0 $?
+    assertEquals "Pineapple Pen" "$(ttpaste -p "$NEW_PASSWORD_1")"
 }
 
 test_id_pass_given_by_arg_error () {
