@@ -130,7 +130,6 @@ test_id_pass_given_by_arg () {
     local NEW_PASSWORD_2="$(dummyString)"
 
     # Short option
-    echo "echo 'I have a pen.' | ttcopy -i $NEW_ID_1 -p $NEW_PASSWORD_1"
     echo 'I have a pen.' | ttcopy -i $NEW_ID_1 -p $NEW_PASSWORD_1
     assertEquals 0 $?
     assertEquals "I have a pen." "$(ttpaste -i "$NEW_ID_1" -p "$NEW_PASSWORD_1")"
