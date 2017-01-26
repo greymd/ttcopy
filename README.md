@@ -1,5 +1,6 @@
 # ttcopy: Trans-Terminal Copy/Paste
 
+[![latest version](https://img.shields.io/github/release/greymd/ttcopy.svg)](https://github.com/greymd/ttcopy/releases/latest)
 [![Build Status](https://travis-ci.org/greymd/ttcopy.svg?branch=master)](https://travis-ci.org/greymd/ttcopy)
 
 Provide copying and pasting within multiple hosts through the Web.
