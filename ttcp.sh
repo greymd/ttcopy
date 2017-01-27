@@ -38,7 +38,7 @@ __ttcp::usage () {
     echo "  -h, --help                         Output a usage message and exit."
     echo "  -V, --version                      Output the version number of $_cmd and exit."
     echo "  -i ID, --id=ID                     Specify ID to identify the data."
-    echo "  -p PASSWORD, --password=PASSWORD   Specify Password to encrypt/decrypt the data."
+    echo "  -p PASSWORD, --password=PASSWORD   Specify password to encrypt/decrypt the data."
 }
 
 __ttcp::opts () {
