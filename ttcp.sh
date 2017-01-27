@@ -134,8 +134,8 @@ __ttcp::is_env_ok () {
         fi
     done < <(echo "$_TTCP_DEPENDENCIES" | tr ' ' '\n')
 
-    [ -z "$TTCP_ID" ] && echo "Set environment variable (TTCP_ID)." >&2 && return -- -1
-    [ -z "$TTCP_PASSWORD" ] && echo "Set environment variable (TTCP_PASSWORD)." >&2 && return -- -1
+    [ -z "$TTCP_ID" ] && echo "Set environment variable (TTCP_ID) or give the ID by -i option." >&2 && return -- -1
+    [ -z "$TTCP_PASSWORD" ] && echo "Set environment variable (TTCP_PASSWORD) or give the password by -p option." >&2 && return -- -1
     return 0
 }
 
