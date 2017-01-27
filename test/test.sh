@@ -119,6 +119,30 @@ test_option_combination () {
     # version + password + id + help
     ttcopy -V --help -p password -i sample | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
     assertEquals 0 $?
+
+    # Undefined option
+    ttcopy -Z
+    assertEquals 4 $?
+
+    # Undefined options + valid options
+    seq 10 | ttcopy -Z --help -p password -i sample
+    assertEquals 4 $?
+
+    # Undefined argument
+    ttcopy foobar
+    assertEquals 4 $?
+
+    # Undefined option
+    ttpaste -Z
+    assertEquals 4 $?
+
+    # Undefined options + valid options
+    seq 10 | ttpaste -Z --help -p password -i sample
+    assertEquals 4 $?
+
+    # Undefined argument
+    ttpaste foobar
+     $?
 }
 
 test_id_pass_given_by_arg () {

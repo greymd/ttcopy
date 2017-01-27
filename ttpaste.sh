@@ -9,6 +9,18 @@ source "$_TTCP_DIR"/ttcp.sh
 # Option parser is called prior to is_env_ok
 # Because id/password might be given by user.
 __ttcp::opts "$@"
+_opt_status=$?
+
+# There is invalid options/arguments.
+if [ $_opt_status -eq 4 ]; then
+    # Same as GNU sed.
+    exit 4
+
+# Shows usage or version number.
+elif [ $_opt_status -eq 254 ]; then
+    exit 0
+fi
+
 __ttcp::is_env_ok || exit -1
 
 trap "__ttcp::unspin; kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
