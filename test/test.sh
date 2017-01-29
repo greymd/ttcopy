@@ -35,6 +35,11 @@ cl1pMockserver () {
     printf "HTTP/1.0 200 Ok\n\nhttp://example.com/URL404/file.txt" | nc -l $port
 }
 
+# Generate dummy data
+dummyString () {
+    cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1
+}
+
 test_copy_transfer_sh_dead () {
     echo "aaaa" | tr -d '\n' | TTCP_TRANSFER_SH="$TTCP_TRANSFER_SH_NG" ttcopy
     assertEquals 128 $?
@@ -98,6 +103,134 @@ test_usage () {
     assertEquals 0 $?
     ttpaste --help | grep -E 'Usage: ttpaste'
     assertEquals 0 $?
+}
+
+# Do not be sensitive.
+# This test case can easily be increased.
+test_option_combination () {
+    # help + other option
+    ttcopy -hp hogehoge | grep -E 'Usage: ttcopy'
+    assertEquals 0 $?
+
+    # Help + other option
+    ttcopy --help -p password -i sample | grep -E 'Usage: ttcopy'
+    assertEquals 0 $?
+
+    # version + password + id + help
+    ttcopy -V --help -p password -i sample | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
+    assertEquals 0 $?
+
+    # Undefined option
+    ttcopy -Z
+    assertEquals 4 $?
+
+    # Undefined options + valid options
+    seq 10 | ttcopy -Z --help -p password -i sample
+    assertEquals 4 $?
+
+    # Undefined argument
+    ttcopy foobar
+    assertEquals 4 $?
+
+    # Undefined option
+    ttpaste -Z
+    assertEquals 4 $?
+
+    # Undefined options + valid options
+    seq 10 | ttpaste -Z --help -p password -i sample
+    assertEquals 4 $?
+
+    # Undefined argument
+    ttpaste foobar
+     $?
+}
+
+test_id_pass_given_by_arg () {
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    local NEW_ID_1="$(dummyString)"
+    local NEW_PASSWORD_1="$(dummyString)"
+    local NEW_ID_2="$(dummyString)"
+    local NEW_PASSWORD_2="$(dummyString)"
+
+    # Short option
+    echo 'I have a pen.' | ttcopy -i $NEW_ID_1 -p $NEW_PASSWORD_1
+    assertEquals 0 $?
+    assertEquals "I have a pen." "$(ttpaste -i "$NEW_ID_1" -p "$NEW_PASSWORD_1")"
+    assertEquals "I have a pen." "$(ttpaste -i "$NEW_ID_1" -p "$NEW_PASSWORD_1")"
+
+    # Long option
+    echo "I have an apple." | ttcopy --id="$NEW_ID_2" --password="$NEW_PASSWORD_2"
+    assertEquals 0 $?
+    assertEquals "I have an apple." "$(ttpaste --id="$NEW_ID_2" --password="$NEW_PASSWORD_2")"
+    assertEquals "I have an apple." "$(ttpaste --id="$NEW_ID_2" --password="$NEW_PASSWORD_2")"
+
+    assertNotEquals "$(ttpaste -i "$NEW_ID_1" -p "$NEW_PASSWORD_1")" "$(ttpaste -i "$NEW_ID_2" -p "$NEW_PASSWORD_2")"
+
+    # Short & Long option
+    echo "I have a pen." | ttcopy -i "$NEW_ID_1" --password="$NEW_PASSWORD_1"
+    assertEquals 0 $?
+    assertEquals "I have a pen." "$(ttpaste -i "$NEW_ID_1" --password="$NEW_PASSWORD_1")"
+    assertEquals "I have a pen." "$(ttpaste -i "$NEW_ID_1" --password="$NEW_PASSWORD_1")"
+
+    # Long & Short option
+    echo "I have a pineapple." | ttcopy --id="$NEW_ID_2" --password="$NEW_PASSWORD_2"
+    assertEquals 0 $?
+    assertEquals "I have a pineapple." "$(ttpaste --id="$NEW_ID_2" --password="$NEW_PASSWORD_2")"
+    assertEquals "I have a pineapple." "$(ttpaste --id="$NEW_ID_2" --password="$NEW_PASSWORD_2")"
+
+    assertNotEquals "$(ttpaste -i "$NEW_ID_1" -p "$NEW_PASSWORD_1")" "$(ttpaste -i "$NEW_ID_2" -p "$NEW_PASSWORD_2")"
+
+    # Password is defined by the variable.
+    TTCP_ID=""
+    TTCP_PASSWORD="$(dummyString)"
+    echo "Apple Pen" | ttcopy -i "$NEW_ID_1"
+    assertEquals 0 $?
+    assertEquals "Apple Pen" "$(ttpaste -i "$NEW_ID_1")"
+
+    # ID is defined by the variable.
+    TTCP_ID="$(dummyString)"
+    TTCP_PASSWORD=""
+    echo "Pineapple Pen" | ttcopy -p "$NEW_PASSWORD_1"
+    assertEquals 0 $?
+    assertEquals "Pineapple Pen" "$(ttpaste -p "$NEW_PASSWORD_1")"
+}
+
+test_id_pass_given_by_arg_error () {
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+
+    # Short option: password is empty
+    echo AAA | ttcopy -i "dummy"
+    assertEquals 255 $?
+
+    # Long option: password is empty
+    echo AAA | ttcopy --id=dummy
+    assertEquals 255 $?
+
+    # Short option: ID is empty
+    echo AAA | ttcopy -p dummy
+    assertEquals 255 $?
+
+    # Long option: ID is empty
+    echo AAA | ttcopy --password=dummy
+    assertEquals 255 $?
+
+    # Short option: password is empty
+    ttpaste -i dummy
+    assertEquals 255 $?
+
+    # Long option: password is empty
+    ttpaste --id=dummy
+    assertEquals 255 $?
+
+    # Short option: ID is empty
+    ttpaste -p dummy
+    assertEquals 255 $?
+
+    # Long option: ID is empty
+    ttpaste --password=dummy
+    assertEquals 255 $?
 }
 
 test_simple_string () {

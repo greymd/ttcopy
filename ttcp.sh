@@ -14,7 +14,7 @@ _TTCP_DEPENDENCIES="${_TTCP_DEPENDENCIES:-yes openssl curl perl}"
 
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
-TTCP_LASTPASTE_PATH="${TMPDIR}/lastPaste"
+TTCP_LASTPASTE_PATH_PREFIX="${TMPDIR}/lastPaste_"
 TTCP_ID_PREFIX="ttcopy"
 
 # Dependent services
@@ -35,8 +35,10 @@ __ttcp::usage () {
     echo "  Usage: $_cmd [OPTIONS]"
     echo
     echo "  OPTIONS:"
-    echo "  -h, --help       Output a usage message and exit."
-    echo "  -V, --version    Output the version number of $_cmd and exit."
+    echo "  -h, --help                         Output a usage message and exit."
+    echo "  -V, --version                      Output the version number of $_cmd and exit."
+    echo "  -i ID, --id=ID                     Specify ID to identify the data."
+    echo "  -p PASSWORD, --password=PASSWORD   Specify password to encrypt/decrypt the data."
 }
 
 __ttcp::opts () {
@@ -49,27 +51,69 @@ __ttcp::opts () {
             # Long options
             --help)
                 __ttcp::usage
-                exit 0
+                return 254
                 ;;
             --version)
                 __ttcp::version
-                exit 0
+                return 254
+                ;;
+            --id=*)
+                TTCP_ID="${1#--id=}"
+                shift
+                ;;
+            --password=*)
+                TTCP_PASSWORD="${1#--password=}"
+                shift
                 ;;
 
             # Short options
-            -*)
+            -[hVip])
+                # For --help
                 if [[ "$1" =~ 'h' ]]; then
                     __ttcp::usage
-                    exit 0
+                    return 254
                 fi
+
+                # For --version
                 if [[ "$1" =~ 'V' ]]; then
                     __ttcp::version
-                    exit 0
+                    return 254
                 fi
+
+                # For --id
+                if [[ "$1" =~ 'i' ]]; then
+                    TTCP_ID="$2"
+                    shift
+
+                # For --password
+                elif [[ "$1" =~ 'p' ]]; then
+                    TTCP_PASSWORD="$2"
+                    shift
+                fi
+
+                # Rotate arguments
                 shift
                 ;;
+
+            # Other options
+            -*)
+                # Same error message as `grep` command.
+                echo "Invalid option -- '${1#-}'" >&2
+                __ttcp::usage
+                return 4
+                ;;
+
+            # Other
+            *)
+                # Show usage and exit
+                echo "Invalid argument -- '${1}'" >&2
+                __ttcp::usage
+                return 4
+                ;;
+
         esac
     done
+    return 0
 }
 
 __ttcp::unspin () {
@@ -109,8 +153,8 @@ __ttcp::is_env_ok () {
         fi
     done < <(echo "$_TTCP_DEPENDENCIES" | tr ' ' '\n')
 
-    [ -z "$TTCP_ID" ] && echo "Set environment variable (TTCP_ID)." >&2 && return -- -1
-    [ -z "$TTCP_PASSWORD" ] && echo "Set environment variable (TTCP_PASSWORD)." >&2 && return -- -1
+    [ -z "$TTCP_ID" ] && echo "Set environment variable (TTCP_ID) or give the ID by -i option." >&2 && return -- -1
+    [ -z "$TTCP_PASSWORD" ] && echo "Set environment variable (TTCP_PASSWORD) or give the password by -p option." >&2 && return -- -1
     return 0
 }
 
