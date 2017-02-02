@@ -1,3 +1,5 @@
+![ttcopy Logo](./img/ttcopy_logo.png)
+
 # ttcopy: Trans-Terminal Copy/Paste
 
 [![latest version](https://img.shields.io/github/release/greymd/ttcopy.svg)](https://github.com/greymd/ttcopy/releases/latest)
