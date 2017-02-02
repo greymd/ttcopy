@@ -1,4 +1,6 @@
-![ttcopy Logo](./img/ttcopy_logo.png)
+<p align="center">
+<img src="./img/ttcopy_logo.png" />
+</p>
 
 # ttcopy: Trans-Terminal Copy/Paste
 
