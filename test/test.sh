@@ -142,7 +142,7 @@ test_option_combination () {
 
     # Undefined argument
     ttpaste foobar
-     $?
+    assertEquals 4 $?
 }
 
 test_id_pass_given_by_arg () {
