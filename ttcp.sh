@@ -10,7 +10,7 @@ readonly TTCP_VERSION="1.1.0"
 _TTCP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 
 # Dependent commands (non POSIX commands)
-_TTCP_DEPENDENCIES="${_TTCP_DEPENDENCIES:-yes openssl curl perl}"
+_TTCP_DEPENDENCIES="${_TTCP_DEPENDENCIES:-yes openssl curl perl gzip}"
 
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
@@ -156,6 +156,14 @@ __ttcp::is_env_ok () {
     [ -z "$TTCP_ID" ] && echo "Set environment variable (TTCP_ID) or give the ID by -i option." >&2 && return -- -1
     [ -z "$TTCP_PASSWORD" ] && echo "Set environment variable (TTCP_PASSWORD) or give the password by -p option." >&2 && return -- -1
     return 0
+}
+
+__ttcp::encode () {
+    gzip | openssl aes-256-cbc -e -pass pass:$TTCP_PASSWORD
+}
+
+__ttcp::decode () {
+    openssl aes-256-cbc -d -pass pass:$TTCP_PASSWORD | gzip -d
 }
 
 ttcopy () {
