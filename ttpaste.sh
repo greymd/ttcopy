@@ -47,7 +47,7 @@ if [ "$TRANS_URL" = "" ]; then
 
     __ttcp::unspin
     echo "(Pasting the last paste)" >&2
-    cat "$TTCP_LASTPASTE_PATH" | __ttcp::decrypt
+    cat "$TTCP_LASTPASTE_PATH" | __ttcp::decode
     exit 0
 fi
 curl --fail -so- "$TRANS_URL" > "$TTCP_LASTPASTE_PATH" 2> /dev/null
@@ -58,6 +58,6 @@ if [ $? -ne 0 ]; then
 fi
 
 __ttcp::unspin
-cat "$TTCP_LASTPASTE_PATH" | __ttcp::decrypt
+cat "$TTCP_LASTPASTE_PATH" | __ttcp::decode
 exit 0
 

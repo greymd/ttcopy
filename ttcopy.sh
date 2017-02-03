@@ -26,7 +26,7 @@ __ttcp::is_env_ok || exit -1
 trap "__ttcp::unspin; kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
 __ttcp::spin "Copying..."
 
-TRANS_URL=$(curl -so- --fail --upload-file <(cat | __ttcp::encrypt) $TTCP_TRANSFER_SH/$TTCP_ID );
+TRANS_URL=$(curl -so- --fail --upload-file <(cat | __ttcp::encode) $TTCP_TRANSFER_SH/$TTCP_ID );
 
 if [ $? -ne 0 ]; then
     __ttcp::unspin

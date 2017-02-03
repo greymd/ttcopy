@@ -158,11 +158,11 @@ __ttcp::is_env_ok () {
     return 0
 }
 
-__ttcp::encrypt () {
+__ttcp::encode () {
     gzip | openssl aes-256-cbc -e -pass pass:$TTCP_PASSWORD
 }
 
-__ttcp::decrypt () {
+__ttcp::decode () {
     openssl aes-256-cbc -d -pass pass:$TTCP_PASSWORD | gzip -d
 }
 
