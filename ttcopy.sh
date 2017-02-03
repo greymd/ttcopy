@@ -13,17 +13,16 @@ _opt_status=$?
 
 # There is invalid options/arguments.
 if [ $_opt_status -eq 4 ]; then
-    # Same as GNU sed.
-    exit 4
+    exit $_TTCP_EINVAL
 
 # Shows usage or version number.
 elif [ $_opt_status -eq 254 ]; then
     exit 0
 fi
 
-__ttcp::is_env_ok || exit -1
+__ttcp::is_env_ok
 
-trap "__ttcp::unspin; kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
+trap "__ttcp::unspin; kill 0; exit $_TTCP_EINTR" SIGHUP SIGINT SIGQUIT SIGTERM
 __ttcp::spin "Copying..."
 
 TRANS_URL=$(curl -so- --fail --upload-file <(cat | openssl aes-256-cbc -e -pass pass:$TTCP_PASSWORD) $TTCP_TRANSFER_SH/$TTCP_ID );
@@ -31,7 +30,7 @@ TRANS_URL=$(curl -so- --fail --upload-file <(cat | openssl aes-256-cbc -e -pass 
 if [ $? -ne 0 ]; then
     __ttcp::unspin
     echo "Failed to upload the content" >&2
-    exit 128
+    exit $_TTCP_ECONTTRANS
 fi
 
 curl -s -X POST "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID" --fail --data "content=$TRANS_URL" > /dev/null
@@ -39,7 +38,7 @@ curl -s -X POST "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID" --fail --data "content
 if [ $? -ne 0 ]; then
     __ttcp::unspin
     echo "Failed to save the content url" >&2
-    exit 129
+    exit $_TTCP_ECONTURL
 fi
 
 __ttcp::unspin
