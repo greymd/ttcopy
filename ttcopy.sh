@@ -20,7 +20,7 @@ elif [ $_opt_status -eq 254 ]; then
     exit 0
 fi
 
-__ttcp::is_env_ok
+__ttcp::check_env
 
 trap "__ttcp::unspin; kill 0; exit $_TTCP_EINTR" SIGHUP SIGINT SIGQUIT SIGTERM
 __ttcp::spin "Copying..."

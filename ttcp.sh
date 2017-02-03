@@ -174,7 +174,7 @@ __ttcp::spin () {
     _TTCP_SPIN_PID=$!
 }
 
-__ttcp::is_env_ok () {
+__ttcp::check_env () {
     while read cmd ; do
         type $cmd > /dev/null 2>&1
         if [ $? -ne 0 ]; then
