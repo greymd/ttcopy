@@ -1,0 +1,44 @@
+@startuml
+actor Host
+database transfer.sh
+database cl1p.net
+
+== ttcopy (start) ==
+
+    Host -> Host : payload
+    Host -> Host : enc_payload = encrypt(gzip(payload))
+
+    Host -> transfer.sh : payload
+    activate transfer.sh
+    transfer.sh -> Host : url
+    deactivate transfer.sh
+
+    Host -> Host : enc_url = encrypt(url)
+
+    Host -> cl1p.net : /prefix/hash() | enc_url
+    activate cl1p.net
+    cl1p.net -> Host : (HTTP 200 OK)
+    deactivate cl1p.net
+
+== ttcopy (end) ==
+
+== ttpaste (start) ==
+
+    Host -> cl1p.net : GET /prefix/sha512()
+    activate cl1p.net
+    cl1p.net -> Host : enc_url
+    deactivate cl1p.net
+
+    Host -> Host : url = decrypt(url)
+
+    Host -> transfer.sh : GET url
+    activate transfer.sh
+    transfer.sh -> Host : enc_payload
+    deactivate transfer.sh
+
+    Host -> Host : payload = decrypt(gzip-d(enc_payload))
+    Host -> Host : payload
+
+== ttpaste (end) ==
+
+@enduml
