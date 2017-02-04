@@ -83,11 +83,11 @@ __ttcp::opts () {
             # Long options
             --help)
                 __ttcp::usage
-                return 254
+                exit 0
                 ;;
             --version)
                 __ttcp::version
-                return 254
+                exit 0
                 ;;
             --id=*)
                 TTCP_ID="${1#--id=}"
@@ -103,13 +103,13 @@ __ttcp::opts () {
                 # For --help
                 if [[ "$1" =~ 'h' ]]; then
                     __ttcp::usage
-                    return 254
+                    exit 0
                 fi
 
                 # For --version
                 if [[ "$1" =~ 'V' ]]; then
                     __ttcp::version
-                    return 254
+                    exit 0
                 fi
 
                 # For --id
@@ -132,7 +132,7 @@ __ttcp::opts () {
                 # Same error message as `grep` command.
                 echo "Invalid option -- '${1#-}'" >&2
                 __ttcp::usage
-                return 4
+                exit $_TTCP_EINVAL
                 ;;
 
             # Other
@@ -140,7 +140,7 @@ __ttcp::opts () {
                 # Show usage and exit
                 echo "Invalid argument -- '${1}'" >&2
                 __ttcp::usage
-                return 4
+                exit $_TTCP_EINVAL
                 ;;
 
         esac

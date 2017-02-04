@@ -6,20 +6,9 @@
 _TTCP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 source "$_TTCP_DIR"/ttcp.sh
 
-# Option parser is called prior to is_env_ok
+# __ttcp::opts is called prior to __ttcp::check_env
 # Because id/password might be given by user.
 __ttcp::opts "$@"
-_opt_status=$?
-
-# There is invalid options/arguments.
-if [ $_opt_status -eq 4 ]; then
-    exit $_TTCP_EINVAL
-
-# Shows usage or version number.
-elif [ $_opt_status -eq 254 ]; then
-    exit 0
-fi
-
 __ttcp::check_env
 
 trap "__ttcp::unspin; kill 0; exit $_TTCP_EINTR" SIGHUP SIGINT SIGQUIT SIGTERM
