@@ -42,17 +42,17 @@ dummyString () {
 
 test_copy_transfer_sh_dead () {
     echo "aaaa" | tr -d '\n' | TTCP_TRANSFER_SH="$TTCP_TRANSFER_SH_NG" ttcopy
-    assertEquals 128 $?
+    assertEquals 16 $?
 }
 
 test_copy_clip_net_dead () {
     echo "aaaa" | tr -d '\n' | TTCP_CLIP_NET="$TTCP_CLIP_NET_NG" ttcopy
-    assertEquals 129 $?
+    assertEquals 17 $?
 }
 
 test_paste_clip_net_dead () {
     TTCP_CLIP_NET="$TTCP_CLIP_NET_NG" ttpaste
-    assertEquals 129 $?
+    assertEquals 17 $?
 }
 
 # `netcat` is necessary to run this test.
@@ -61,23 +61,23 @@ test_paste_transfer_sh_dead () {
     # Run mock server to simulate c1ip.net with 10000 port.
     cl1pMockserver $port > /dev/null 2>&1 &
     TTCP_CLIP_NET="http://localhost:$port" TTCP_TRANSFER_SH="http://example.com" ttpaste
-    assertEquals 128 $?
+    assertEquals 16 $?
 }
 
 test_lack_dependency () {
     # It fails, if there is `hogehogeoppaipai` command.
     echo aaa | _TTCP_DEPENDENCIES="hogehogeoppaipai curl" ttcopy
-    assertEquals 255 $?
+    assertEquals 127 $?
 }
 
 test_unset_id () {
     echo aaa | TTCP_ID="" ttcopy
-    assertEquals 255 $?
+    assertEquals 3 $?
 }
 
 test_unset_password () {
     echo aaa | TTCP_PASSWORD="" ttcopy
-    assertEquals 255 $?
+    assertEquals 3 $?
 }
 
 test_version () {
@@ -202,35 +202,35 @@ test_id_pass_given_by_arg_error () {
 
     # Short option: password is empty
     echo AAA | ttcopy -i "dummy"
-    assertEquals 255 $?
+    assertEquals 3 $?
 
     # Long option: password is empty
     echo AAA | ttcopy --id=dummy
-    assertEquals 255 $?
+    assertEquals 3 $?
 
     # Short option: ID is empty
     echo AAA | ttcopy -p dummy
-    assertEquals 255 $?
+    assertEquals 3 $?
 
     # Long option: ID is empty
     echo AAA | ttcopy --password=dummy
-    assertEquals 255 $?
+    assertEquals 3 $?
 
     # Short option: password is empty
     ttpaste -i dummy
-    assertEquals 255 $?
+    assertEquals 3 $?
 
     # Long option: password is empty
     ttpaste --id=dummy
-    assertEquals 255 $?
+    assertEquals 3 $?
 
     # Short option: ID is empty
     ttpaste -p dummy
-    assertEquals 255 $?
+    assertEquals 3 $?
 
     # Long option: ID is empty
     ttpaste --password=dummy
-    assertEquals 255 $?
+    assertEquals 3 $?
 }
 
 test_simple_string () {
