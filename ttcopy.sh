@@ -6,24 +6,12 @@
 _TTCP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 source "$_TTCP_DIR"/ttcp.sh
 
-# Option parser is called prior to is_env_ok
+# __ttcp::opts is called prior to __ttcp::check_env
 # Because id/password might be given by user.
 __ttcp::opts "$@"
-_opt_status=$?
+__ttcp::check_env
 
-# There is invalid options/arguments.
-if [ $_opt_status -eq 4 ]; then
-    # Same as GNU sed.
-    exit 4
-
-# Shows usage or version number.
-elif [ $_opt_status -eq 254 ]; then
-    exit 0
-fi
-
-__ttcp::is_env_ok || exit -1
-
-trap "__ttcp::unspin; kill 0; exit 2" SIGHUP SIGINT SIGQUIT SIGTERM
+trap "__ttcp::unspin; kill 0; exit $_TTCP_EINTR" SIGHUP SIGINT SIGQUIT SIGTERM
 __ttcp::spin "Copying..."
 
 TRANS_URL=$(curl -so- --fail --upload-file <(cat | __ttcp::encode) $TTCP_TRANSFER_SH/$TTCP_ID );
@@ -31,7 +19,7 @@ TRANS_URL=$(curl -so- --fail --upload-file <(cat | __ttcp::encode) $TTCP_TRANSFE
 if [ $? -ne 0 ]; then
     __ttcp::unspin
     echo "Failed to upload the content" >&2
-    exit 128
+    exit $_TTCP_ECONTTRANS
 fi
 
 curl -s -X POST "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID" --fail --data "content=$TRANS_URL" > /dev/null
@@ -39,7 +27,7 @@ curl -s -X POST "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID" --fail --data "content
 if [ $? -ne 0 ]; then
     __ttcp::unspin
     echo "Failed to save the content url" >&2
-    exit 129
+    exit $_TTCP_ECONTURL
 fi
 
 __ttcp::unspin
