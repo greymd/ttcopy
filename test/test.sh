@@ -12,19 +12,19 @@ elif [ -n "$BASH_VERSION" ]; then
 fi
 
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
-. "${TEST_DIR}/../ttcp.sh"
+. "${TEST_DIR}/../ttcp_activate.sh"
 
 TTCP_CLIP_NET_NG="https://example.com"
 TTCP_TRANSFER_SH_NG="https://example.com"
 
-TTCP_ID=""
-TTCP_PASSWORD=""
+export TTCP_ID=""
+export TTCP_PASSWORD=""
 
 # It is called before each tests.
 setUp () {
     # Set random id/password
-    TTCP_ID="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
-    TTCP_PASSWORD="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
+    export TTCP_ID="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
+    export TTCP_PASSWORD="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
 }
 
 # Mockserver for c1ip.net
