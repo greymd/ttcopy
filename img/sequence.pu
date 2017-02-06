@@ -3,41 +3,62 @@ actor Host
 database transfer.sh
 database cl1p.net
 
+note right of cl1p.net
+    # Fnctions
+    * encode(key, data) -- encode data with given key with AES256-CBC and gzip.
+    * decode(key, data) -- decode data with given key with AES256-CBC and un-gzip.
+    * sha512(data) -- Create message digest with SHA512.
+
+    # Environment Variables
+    * TTCP_ID ... given by user.
+    * TTCP_PASSWORD ... given by user.
+    * TTCP_SALT ... something.
+
+    * ID_TRANSFER = sha512(TTCP_ID)
+    * PASSWORD_TRANSFER = TTCP_PASSWORD + TTCP_SALT
+
+    * ID_CL1P = sha512(TTCP_ID + TTCP_SALT)
+    * PASSWORD_CL1P = sha512(TTCP_PASSWORD + TTCP_ID)
+
+end note
+
 == ttcopy (start) ==
 
-    Host -> Host : payload
-    Host -> Host : enc_payload = encrypt(gzip(payload))
+Host -> Host : Create ... DATA
+Host -> Host : ENC_DATA = encode(TTCP_PASSWORD + TTCP_SALT , DATA)
+Host -> transfer.sh : ENC_DATA
+note right : URL : transfer.sh/sha512(TTCP_ID)
+activate transfer.sh
+transfer.sh -> Host : TRANS_URL
+deactivate transfer.sh
 
-    Host -> transfer.sh : payload
-    activate transfer.sh
-    transfer.sh -> Host : url
-    deactivate transfer.sh
+Host -> Host : ENC_TRANS_URL = encode(sha512(TTCP_PASSWORD + TTCP_ID) , TRANS_URL)
 
-    Host -> Host : enc_url = encrypt(url)
+Host -> cl1p.net : ENC_TRANS_URL
+note right : URL : http://cl1p.net/sha512(TTCP_ID + TTCP_SALT)
 
-    Host -> cl1p.net : /prefix/hash() | enc_url
-    activate cl1p.net
-    cl1p.net -> Host : (HTTP 200 OK)
-    deactivate cl1p.net
+activate cl1p.net
+cl1p.net -> Host : (HTTP 200 OK)
+deactivate cl1p.net
 
 == ttcopy (end) ==
 
 == ttpaste (start) ==
 
-    Host -> cl1p.net : GET /prefix/sha512()
-    activate cl1p.net
-    cl1p.net -> Host : enc_url
-    deactivate cl1p.net
+Host -> cl1p.net : (HTTP Request)
+note right : URL : http://cl1p.net/sha512(TTCP_ID)
+activate cl1p.net
+cl1p.net -> Host : ENC_TRANS_URL
+Host -> Host : TRANS_URL = decode(sha512(TTCP_PASSWORD + TTCP_ID) , ENC_TRANS_URL)
+deactivate cl1p.net
 
-    Host -> Host : url = decrypt(url)
-
-    Host -> transfer.sh : GET url
-    activate transfer.sh
-    transfer.sh -> Host : enc_payload
-    deactivate transfer.sh
-
-    Host -> Host : payload = decrypt(gzip-d(enc_payload))
-    Host -> Host : payload
+Host -> transfer.sh : (HTTP Request)
+note right : URL : TRANS_URL
+activate transfer.sh
+transfer.sh -> Host : ENC_DATA
+Host -> Host : DATA = decode(ENC_DATA)
+deactivate transfer.sh
+Host -> Host : Print ... DATA
 
 == ttpaste (end) ==
 
