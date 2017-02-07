@@ -32,7 +32,13 @@ setUp () {
 # which is supposed to have 404 http status.
 cl1pMockserver () {
     local port=$1
-    printf "HTTP/1.0 200 Ok\n\nhttp://example.com/URL404/file.txt" | nc -l $port
+    # How to create it
+    # $ source ttcp.sh
+    # $ TTCP_PASSWORD="aaa"
+    # $ TTCP_SALT1="bbb"
+    # $ echo "http://example.com/URL404/file.txt" | __ttcp::encode "$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)" | __ttcp::base64enc
+    local url404="yJCQtv32TUTdk_hBCvS6qBq_Apu7JWkhqgJdZMsjhAuYGwRaUJRVArqhO4IVxgcAiWo1ZDtWP_xdTs4PJmxu8Q=="
+    printf "HTTP/1.0 200 Ok\n\nTTCP[$url404]" | nc -l $port
 }
 
 # Generate dummy data
@@ -46,8 +52,35 @@ test_activator_dont_create_dupulicate_entry () {
 
     # As $_TTCP_DIR is already in the $PATH, so the activator should not do
     # anything. Here we check $PATH got no modification.
-
     assertEquals "$oldPATH" "$PATH"
+}
+
+test_failure_encoding () {
+    # openssl scommand stops with something wrong.
+    seq 5 10 | _TTCP_ENCRYPT_ALGORITHM="dummy-encoding" ttcopy -i hoge -p hoge 2>/dev/null
+    assertEquals 7 $?
+}
+
+test_failure_decoding () {
+    # Password is wrong.
+    seq 5 10 | ttcopy -i myid -p mypass
+    ttpaste -i myid -p wrong_pass
+    assertEquals 8 $?
+
+    # First time is ok, but second time is wrong.
+    seq 5 10 | ttcopy -i myid -p mypass
+    ttpaste -i myid -p mypass > /dev/null
+    assertEquals 0 $?
+    ttpaste -i myid -p wrong_pass > /dev/null
+    assertEquals 8 $?
+
+    # FIXME: This case does not pass, because of the bug.
+    ## First time is wrong, and second time is ok.
+    # seq 5 10 | ttcopy -i hoge -p hoge
+    # ttpaste -i hoge -p hog
+    # assertEquals 8 $?
+    # ttpaste -i hoge -p hoge
+    # assertEquals 0 $?
 }
 
 test_copy_transfer_sh_dead () {
@@ -70,7 +103,7 @@ test_paste_transfer_sh_dead () {
     local port=10000
     # Run mock server to simulate c1ip.net with 10000 port.
     cl1pMockserver $port > /dev/null 2>&1 &
-    TTCP_CLIP_NET="http://localhost:$port" TTCP_TRANSFER_SH="http://example.com" ttpaste
+    TTCP_PASSWORD="aaa" TTCP_SALT1="bbb" TTCP_CLIP_NET="http://localhost:$port" TTCP_TRANSFER_SH="http://example.com" ttpaste
     assertEquals 16 $?
 }
 
