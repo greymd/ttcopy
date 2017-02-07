@@ -48,6 +48,9 @@ _TTCP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; cd ..; pwd)"
 # Dependent commands (non POSIX commands)
 _TTCP_DEPENDENCIES="${_TTCP_DEPENDENCIES:-yes openssl curl perl gzip}"
 
+# Algorithm for encoding data
+_TTCP_ENCRYPT_ALGORITHM="${_TTCP_ENCRYPT_ALGORITHM:-aes-256-cbc}"
+
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
 TTCP_LASTPASTE_PATH_PREFIX="${TMPDIR}/lastPaste_"
@@ -199,11 +202,50 @@ __ttcp::check_env () {
     return 0
 }
 
+# key -- $1
+# payload -- stdin
+#
+# As of 2.0.0, we do not have any plans to use `iv` for encryption.
+# iv means "Initialization Vector". "0" is set as the default value.
 __ttcp::encode () {
-    gzip | openssl aes-256-cbc -e -pass pass:$TTCP_PASSWORD
+    local _key="$1"
+    local _iv="0"
+    gzip | openssl "${_TTCP_ENCRYPT_ALGORITHM}" -e -K "$_key" -iv "$_iv"
 }
 
+# key -- $1
+# payload -- stdin
 __ttcp::decode () {
-    openssl aes-256-cbc -d -pass pass:$TTCP_PASSWORD | gzip -d
+    local _key="$1"
+    local _iv="0"
+    openssl "${_TTCP_ENCRYPT_ALGORITHM}" -d -K "$_key" -iv "$_iv" | gzip -d
+}
+
+__ttcp::hash () {
+    # Print hash with hexdump.
+    # -binary option is used to
+    # surpress unnecessary prefix "(stdin)="
+    # reference:
+    #     http://unix.stackexchange.com/questions/42797/openssl-dgst-sha1-producing-an-extraneous-stdin-prefix-and-trailing-new
+    openssl sha -sha256 -binary | \
+        od -tx1 -An | \
+        tr -dc '[a-z0-9]'
+}
+
+__ttcp::base64enc () {
+    openssl base64 | \
+        # openssl command would insert new lines in case of long output.
+        tr -d '\n' | \
+        # use "BASE64URL" format insead of BASE64 to compatible with POST method
+        tr -- '+/' '-_'
+}
+
+__ttcp::base64dec () {
+    tr -- '-_' '+/' | \
+        # openssl command would stop
+        # if the number of characters on single line exceeds 64...
+        # `fold -w` is in POSIX.
+        fold -w 64 | \
+        openssl base64 -d
 }
 
