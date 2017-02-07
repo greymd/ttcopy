@@ -56,7 +56,12 @@ _TTCP_ENCRYPT_ALGORITHM="${_TTCP_ENCRYPT_ALGORITHM:-aes-256-cbc}"
 TTCP_LASTPASTE_PATH_PREFIX="${TMPDIR}/lastPaste_"
 
 TTCP_ID_PREFIX="ttcopy"
+
+# Salt used to encrypt the url of the file you uploaded.
+# You can change it to any value (more secure).
+# First salt is used for cl1p.net.
 TTCP_SALT1="${TTCP_SALT1:-e7a082e7b396}"
+# Second salt is used for transfer.sh
 TTCP_SALT2="${TTCP_SALT2:-e9a39fe5a1a9}"
 
 # Dependent services
