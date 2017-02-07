@@ -18,11 +18,11 @@ note right of cl1p.net
     * DATA ... Data to be delivered.
     * enc-SOMETHING ... encrypted SOMETHING (i,e enc-DATA).
 
-    * ID_TRANSFER = hash(ID + SALT1)
-    * PASSWORD_TRANSFER = hash(PASSWORD + SALT1)
+    * ID_CLIP = hash(ID + SALT1)
+    * PASSWORD_CLIP = hash(PASSWORD + SALT1)
 
-    * ID_CLIP = hash(ID + SALT2)
-    * PASSWORD_CLIP = hash(PASSWORD + ID + SALT2)
+    * ID_TRANSFER = hash(ID + SALT2)
+    * PASSWORD_TRANSFER = hash(PASSWORD + ID + SALT2)
 
 end note
 
