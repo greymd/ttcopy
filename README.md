@@ -19,7 +19,7 @@ Provide copying and pasting within multiple hosts through the Web.
   * openssl
   * curl
 
-# Install
+# Installation
 First of all, please prepare ID and Password **as you like**.
 Do not be lazy. You are **NOT** required to register them on any services.
 The data you copied can be pasted within the hosts having same ID/Password.
@@ -27,8 +27,9 @@ The data you copied can be pasted within the hosts having same ID/Password.
 After that, set up `ttcopy` on the hosts which you want to make share same data.
 Please follow the following instructions to install it.
 
-## For Zsh & [zplug](zplug/zplug)
+## With [zplug](zplug/zplug) (for zsh users)
 
+If you are using zplug, it is easy and recommended way.
 Add those lines to `.zshrc`.
 
 ```sh
@@ -36,10 +37,14 @@ Add those lines to `.zshrc`.
 TTCP_ID="your_id"
 TTCP_PASSWORD="your_password"
 
-zplug "greymd/ttcopy"
+zplug "greymd/ttcopy", as:command, use:"bin/*"
 ```
 
-## For Zsh or Bash
+That's all 🎉.
+
+## Manual Installation
+
+If you are not using `zplug` (includeing bash users), follow below steps
 
 #### 1. Clone repository
 
@@ -49,14 +54,28 @@ $ git clone https://github.com/greymd/ttcopy.git ~/ttcopy
 
 #### 2. Edit `.bashrc` or `.zshrc`
 
-And add following lines.
+Add following lines.
 
 ```sh
 # Set ID and Password you decided.
 TTCP_ID="your_id"
 TTCP_PASSWORD="your_password"
 
-source ~/ttcopy/ttcp.sh
+source ~/ttcopy/ttcp_activate.sh
+```
+
+##### For advanced users
+
+`ttcp_activate.sh` adds `ttcocpy/bin` to `$PATH`. Instead of using it, you can
+copy `ttcopy/bin` and `ttcopy/lib` somewhere you want to place then make sure
+`ttcopy/bin` be listed under `$PATH`.
+
+For example,
+
+```sh
+cp ~/ttcopy/bin ~/ttcopy/lib /usr/local
+
+echo "export PATH=$PATH:/usr/local/bin" >> ~/.zshrc" # if you need
 ```
 
 # Examples
