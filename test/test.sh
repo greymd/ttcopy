@@ -23,8 +23,8 @@ export TTCP_PASSWORD=""
 # It is called before each tests.
 setUp () {
     # Set random id/password
-    export TTCP_ID="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
-    export TTCP_PASSWORD="$(cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1)"
+    export TTCP_ID="$(cat /dev/urandom | grep -ao '[a-zA-Z0-9]' | tr -d '\n' | fold -w 128 | head -n 1)"
+    export TTCP_PASSWORD="$(cat /dev/urandom | grep -ao '[a-zA-Z0-9]' | tr -d '\n' | fold -w 128 | head -n 1)"
 }
 
 # Mockserver for c1ip.net
@@ -33,7 +33,7 @@ setUp () {
 cl1pMockserver () {
     local port=$1
     # How to create it
-    # $ source ttcp.sh
+    # $ source lib/ttcp
     # $ TTCP_PASSWORD="aaa"
     # $ TTCP_SALT1="bbb"
     # $ echo "http://example.com/URL404/file.txt" | __ttcp::encode "$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)" | __ttcp::base64enc
@@ -56,7 +56,7 @@ test_activator_dont_create_dupulicate_entry () {
 }
 
 test_failure_encoding () {
-    # openssl scommand stops with something wrong.
+    # openssl command stops with something wrong.
     seq 5 10 | _TTCP_ENCRYPT_ALGORITHM="dummy-encoding" ttcopy -i hoge -p hoge 2>/dev/null
     assertEquals 7 $?
 }
