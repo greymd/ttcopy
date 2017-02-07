@@ -40,6 +40,16 @@ dummyString () {
     cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1
 }
 
+test_activator_dont_create_dupulicate_entry () {
+    local oldPATH="$PATH"
+    . "${TEST_DIR}/../ttcp_activate.sh"
+
+    # As $_TTCP_DIR is already in the $PATH, so the activator should not do
+    # anything. Here we check $PATH got no modification.
+
+    assertEquals "$oldPATH" "$PATH"
+}
+
 test_copy_transfer_sh_dead () {
     echo "aaaa" | tr -d '\n' | TTCP_TRANSFER_SH="$TTCP_TRANSFER_SH_NG" ttcopy
     assertEquals 16 $?
