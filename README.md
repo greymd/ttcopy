@@ -27,7 +27,7 @@ The data you copied can be pasted within the hosts having same ID/Password.
 After that, set up `ttcopy` on the hosts which you want to make share same data.
 Please follow the following instructions to install it.
 
-## With [zplug](zplug/zplug) (for zsh users)
+## With [zplug](https://zplug.sh) (for zsh users)
 
 If you are using zplug, it is easy and recommended way.
 Add those lines to `.zshrc`.
@@ -37,7 +37,7 @@ Add those lines to `.zshrc`.
 export TTCP_ID="your_id"
 export TTCP_PASSWORD="your_password"
 
-zplug "greymd/ttcopy", use:"ttcp_activate.sh"
+zplug "greymd/ttcopy"
 ```
 
 That's all 🎉.
