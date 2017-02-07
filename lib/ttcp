@@ -19,8 +19,11 @@ readonly _TTCP_EINVAL=4
 # Nothing has been copied yet
 readonly _TTCP_ENOCONTENT=5
 
-# openssl got something wrong.
-readonly _TTCP_EENCRYPT=8
+# Failed to encode something.
+readonly _TTCP_EENCODE=7
+
+# Failed to decode something.
+readonly _TTCP_EDECODE=8
 
 # Necessary commands are not found
 readonly _TTCP_ENOCMD=127
