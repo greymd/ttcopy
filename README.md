@@ -34,10 +34,10 @@ Add those lines to `.zshrc`.
 
 ```sh
 # Set ID and Password you decided.
-TTCP_ID="your_id"
-TTCP_PASSWORD="your_password"
+export TTCP_ID="your_id"
+export TTCP_PASSWORD="your_password"
 
-zplug "greymd/ttcopy", as:command, use:"bin/*"
+zplug "greymd/ttcopy", use:"ttcp_activate.sh"
 ```
 
 That's all 🎉.
@@ -58,8 +58,8 @@ Add following lines.
 
 ```sh
 # Set ID and Password you decided.
-TTCP_ID="your_id"
-TTCP_PASSWORD="your_password"
+export TTCP_ID="your_id"
+export TTCP_PASSWORD="your_password"
 
 source ~/ttcopy/ttcp_activate.sh
 ```
@@ -73,7 +73,7 @@ copy `ttcopy/bin` and `ttcopy/lib` somewhere you want to place then make sure
 For example,
 
 ```sh
-cp ~/ttcopy/bin ~/ttcopy/lib /usr/local
+cp -rf ~/ttcopy/bin ~/ttcopy/lib /usr/local
 
 echo "export PATH=$PATH:/usr/local/bin" >> ~/.zshrc" # if you need
 ```
