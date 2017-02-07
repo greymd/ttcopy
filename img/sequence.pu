@@ -5,37 +5,41 @@ database cl1p.net
 
 note right of cl1p.net
     # Fnctions
-    * encode(key, data) -- encode data with given key with AES256-CBC and gzip.
-    * decode(key, data) -- decode data with given key with AES256-CBC and un-gzip.
-    * sha512(data) -- Create message digest with SHA512.
+    * encode(key, data) -- encode data with given key with AES256-CBC and gzip it.
+    * decode(key, data) -- decode data with given key with AES256-CBC and un-gzip it.
+    * hash(data) -- Create message digest with SHA256.
 
-    # Environment Variables
-    * TTCP_ID ... given by user.
-    * TTCP_PASSWORD ... given by user.
-    * TTCP_SALT ... something.
+    # Variables
+    * ID ... given by user.
+    * PASSWORD ... given by user.
+    * SALT1 ... something.
+    * SALT2 ... something.
 
-    * ID_TRANSFER = sha512(TTCP_ID)
-    * PASSWORD_TRANSFER = TTCP_PASSWORD + TTCP_SALT
+    * DATA ... Data to be delivered.
+    * enc-SOMETHING ... encrypted SOMETHING (i,e enc-DATA).
 
-    * ID_CL1P = sha512(TTCP_ID + TTCP_SALT)
-    * PASSWORD_CL1P = sha512(TTCP_PASSWORD + TTCP_ID)
+    * ID_TRANSFER = hash(ID + SALT1)
+    * PASSWORD_TRANSFER = hash(PASSWORD + SALT1)
+
+    * ID_CLIP = hash(ID + SALT2)
+    * PASSWORD_CLIP = hash(PASSWORD + ID + SALT2)
 
 end note
 
 == ttcopy (start) ==
 
-Host -> Host : Create ... DATA
-Host -> Host : ENC_DATA = encode(TTCP_PASSWORD + TTCP_SALT , DATA)
-Host -> transfer.sh : ENC_DATA
-note right : URL : transfer.sh/sha512(TTCP_ID)
+Host -> Host : create DATA
+Host -> Host : enc-DATA = encode(PASSWORD_TRANSFER , DATA)
+Host -> transfer.sh : enc-DATA
+note right : URL : transfer.sh/ID_TRANSFER
 activate transfer.sh
 transfer.sh -> Host : TRANS_URL
 deactivate transfer.sh
 
-Host -> Host : ENC_TRANS_URL = encode(sha512(TTCP_PASSWORD + TTCP_ID) , TRANS_URL)
+Host -> Host : enc-TRANS_URL = encode(PASSWORD_CLIP , TRANS_URL)
 
-Host -> cl1p.net : ENC_TRANS_URL
-note right : URL : http://cl1p.net/sha512(TTCP_ID + TTCP_SALT)
+Host -> cl1p.net : enc-TRANS_URL
+note right : URL : http://cl1p.net/ID_CLIP
 
 activate cl1p.net
 cl1p.net -> Host : (HTTP 200 OK)
@@ -46,19 +50,19 @@ deactivate cl1p.net
 == ttpaste (start) ==
 
 Host -> cl1p.net : (HTTP Request)
-note right : URL : http://cl1p.net/sha512(TTCP_ID)
+note right : URL : http://cl1p.net/ID_CLIP
 activate cl1p.net
-cl1p.net -> Host : ENC_TRANS_URL
-Host -> Host : TRANS_URL = decode(sha512(TTCP_PASSWORD + TTCP_ID) , ENC_TRANS_URL)
+cl1p.net -> Host : enc-TRANS_URL
+Host -> Host : TRANS_URL = decode(PASSWORD_CLIP , enc-TRANS_URL)
 deactivate cl1p.net
 
 Host -> transfer.sh : (HTTP Request)
 note right : URL : TRANS_URL
 activate transfer.sh
-transfer.sh -> Host : ENC_DATA
-Host -> Host : DATA = decode(ENC_DATA)
+transfer.sh -> Host : enc-DATA
+Host -> Host : DATA = decode(PASSWORD_TRANSFER , enc-DATA)
 deactivate transfer.sh
-Host -> Host : Print ... DATA
+Host -> Host : print(DATA)
 
 == ttpaste (end) ==
 
