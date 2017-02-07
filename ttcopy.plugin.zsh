@@ -1,1 +1,1 @@
-source "`dirname $0`/ttcp.sh"
+source "`dirname $0`/ttcp_activate.sh"
