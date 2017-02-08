@@ -31,6 +31,7 @@ TTCP_PASSWORD_CLIP="$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)"
 TTCP_PASSWORD_TRANS="$(echo "${TTCP_PASSWORD}${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"
 
 TTCP_LASTPASTE_PATH="${TTCP_LASTPASTE_PATH_PREFIX}${TTCP_ID}"
+TTCP_LASTURL_PATH="${TTCP_LASTPASTE_PATH_PREFIX}${TTCP_ID}_url"
 CLIP_BODY=$(curl --fail -so- "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID_CLIP" 2> /dev/null)
 
 if [ $? -ne 0 ]; then
@@ -42,6 +43,13 @@ fi
 ENCRYPTED_TRANS_URL=$(echo "$CLIP_BODY" |
                    # Use only (extended) regular expression compatible with POSIX.
                    sed 's/<[^>]*>//g' | grep -E "TTCP\[.*\]" | head -n 1 | sed 's/^TTCP\[//;s/\]$//;' 2> /dev/null)
+
+if [ "$ENCRYPTED_TRANS_URL" = "" ]; then
+    [ -f "$TTCP_LASTURL_PATH" ] &&
+        { echo "(Retrying to decrypt the url last got...)" >&2;
+          # If we the url local cache, use it.
+          ENCRYPTED_TRANS_URL=$(cat "$TTCP_LASTURL_PATH"); }
+fi
 
 if [ "$ENCRYPTED_TRANS_URL" = "" ]; then
     [ -f "$TTCP_LASTPASTE_PATH" ] ||
@@ -56,6 +64,9 @@ if [ "$ENCRYPTED_TRANS_URL" = "" ]; then
     exit 0
 fi
 
+# Note: we make encrypted url's local cache.
+echo "$ENCRYPTED_TRANS_URL" > "${TTCP_LASTURL_PATH}"
+
 TRANS_URL="$(echo $ENCRYPTED_TRANS_URL | __ttcp::base64dec | __ttcp::decode "$TTCP_PASSWORD_CLIP")"
 check_decoding_failure "$?"
 
@@ -65,6 +76,9 @@ if [ $? -ne 0 ]; then
     echo "Failed to get the content" >&2
     exit $_TTCP_ECONTTRANS
 fi
+
+# Finally remove the url local cache.
+rm -f "${TTCP_LASTURL_PATH}"
 
 __ttcp::unspin
 __ttcp::decode "$TTCP_PASSWORD_TRANS" < "$TTCP_LASTPASTE_PATH"
