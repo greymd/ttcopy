@@ -68,19 +68,37 @@ test_failure_decoding () {
     assertEquals 8 $?
 
     # First time is ok, but second time is wrong.
+    # This test ensures retrieved content is cached with encryption.
     seq 5 10 | ttcopy -i myid -p mypass
     ttpaste -i myid -p mypass > /dev/null
     assertEquals 0 $?
     ttpaste -i myid -p wrong_pass > /dev/null
     assertEquals 8 $?
 
-    # FIXME: This case does not pass, because of the bug.
-    ## First time is wrong, and second time is ok.
-    # seq 5 10 | ttcopy -i hoge -p hoge
-    # ttpaste -i hoge -p hog
-    # assertEquals 8 $?
-    # ttpaste -i hoge -p hoge
-    # assertEquals 0 $?
+    # First time is wrong, but second time is ok.
+    # This test ensures retrieved url is cached with encryption.
+    seq 5 10 | ttcopy -i myid -p mypass
+    ttpaste -i myid -p wrong_pass > /dev/null
+    assertEquals 8 $?
+    ttpaste -i myid -p mypass > /dev/null
+    assertEquals 0 $?
+
+    # First time is wrong, then upload new stuff, and second time is ok.
+    # This test ensures NOT to use the local url cache for new content.
+    seq 5 10 | ttcopy -i myid -p mypass
+    ttpaste -i myid -p wrong_pass > /dev/null
+    assertEquals 8 $?
+    echo "new content" | ttcopy -i myid -p mypass
+    assertEquals "new content" "$(ttpaste -i myid -p mypass)"
+    assertEquals 0 $?
+
+    # After fail of decryption, try with different id.
+    # This test ensures NOT to use the local url cache for different user.
+    seq 5 10 | ttcopy -i myid -p mypass
+    ttpaste -i myid -p wrong_pass > /dev/null
+    assertEquals 8 $?
+    ttpaste -i different_id -p mypass
+    assertEquals 5 $? # Nothing should be copied.
 }
 
 test_copy_transfer_sh_dead () {
