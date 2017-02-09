@@ -25,6 +25,8 @@ check_decoding_failure() {
     fi
 }
 
+_HTTP_CLIENT="$(__ttcp::http_client)"
+
 TTCP_ID_CLIP="$(echo "${TTCP_ID}${TTCP_SALT1}" | __ttcp::hash)"
 TTCP_PASSWORD_CLIP="$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)"
 # TTCP_ID_TRANS="$(echo "${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"
@@ -32,7 +34,7 @@ TTCP_PASSWORD_TRANS="$(echo "${TTCP_PASSWORD}${TTCP_ID}${TTCP_SALT2}" | __ttcp::
 
 TTCP_LASTPASTE_PATH="${TTCP_LASTPASTE_PATH_PREFIX}${TTCP_ID}"
 TTCP_LASTURL_PATH="${TTCP_LASTPASTE_PATH_PREFIX}${TTCP_ID}_url"
-CLIP_BODY=$(curl --fail -so- "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID_CLIP" 2> /dev/null)
+CLIP_BODY=$(${_HTTP_CLIENT} --fail -so- "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID_CLIP" 2> /dev/null)
 
 if [ $? -ne 0 ]; then
     __ttcp::unspin
@@ -70,7 +72,7 @@ echo "$ENCRYPTED_TRANS_URL" > "${TTCP_LASTURL_PATH}"
 TRANS_URL="$(echo $ENCRYPTED_TRANS_URL | __ttcp::base64dec | __ttcp::decode "$TTCP_PASSWORD_CLIP")"
 check_decoding_failure "$?"
 
-curl --fail -so- "$TRANS_URL" > "$TTCP_LASTPASTE_PATH" 2> /dev/null
+${_HTTP_CLIENT} --fail -so- "$TRANS_URL" > "$TTCP_LASTPASTE_PATH" 2> /dev/null
 if [ $? -ne 0 ]; then
     __ttcp::unspin
     echo "Failed to get the content" >&2

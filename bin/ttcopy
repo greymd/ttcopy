@@ -15,12 +15,14 @@ __ttcp::check_env
 trap "__ttcp::unspin; kill 0; exit $_TTCP_EINTR" SIGHUP SIGINT SIGQUIT SIGTERM
 __ttcp::spin "Copying..."
 
+_HTTP_CLIENT="$(__ttcp::http_client)"
+
 TTCP_ID_CLIP="$(echo "${TTCP_ID}${TTCP_SALT1}" | __ttcp::hash)"
 TTCP_PASSWORD_CLIP="$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)"
 TTCP_ID_TRANS="$(echo "${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"
 TTCP_PASSWORD_TRANS="$(echo "${TTCP_PASSWORD}${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"
 
-TRANS_URL=$(curl -so- --fail --upload-file <(cat | __ttcp::encode "${TTCP_PASSWORD_TRANS}") $TTCP_TRANSFER_SH/$TTCP_ID_TRANS );
+TRANS_URL=$(${_HTTP_CLIENT} -so- --fail --upload-file <(cat | __ttcp::encode "${TTCP_PASSWORD_TRANS}") $TTCP_TRANSFER_SH/$TTCP_ID_TRANS );
 
 if [ $? -ne 0 ]; then
     __ttcp::unspin
@@ -36,7 +38,7 @@ if [ "$ENCRYPTED_TRANS_URL" = "" ]; then
     exit $_TTCP_EENCODE
 fi
 
-curl -s -X POST "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID_CLIP" --fail --data "content=TTCP[$ENCRYPTED_TRANS_URL]" > /dev/null
+${_HTTP_CLIENT} -s -X POST "$TTCP_CLIP_NET/$TTCP_ID_PREFIX/$TTCP_ID_CLIP" --fail --data "content=TTCP[$ENCRYPTED_TRANS_URL]" > /dev/null
 
 if [ $? -ne 0 ]; then
     __ttcp::unspin
