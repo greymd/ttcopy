@@ -20,6 +20,10 @@ TTCP_TRANSFER_SH_NG="https://example.com"
 export TTCP_ID=""
 export TTCP_PASSWORD=""
 
+# Docker container which is used for proxy server.
+readonly CONTAINER_NAME="ttcopy-test-proxy"
+readonly DOCKER_HUB_REPOSITORY="greymd/$CONTAINER_NAME"
+
 # It is called before each tests.
 setUp () {
     # Set random id/password
@@ -28,6 +32,23 @@ setUp () {
 }
 
 # Mockserver for c1ip.net
+# Create proxy server with squid.
+# Q. Why `nc` is not used for it?
+# A. `nc` does not support proxy fowarding with HTTPS protocol.
+createProxyServer() {
+    # If there is no "greymd/ttcopy-test-proxy" image, pull it.
+    if ! ( docker images --format '{{.Repository}}' | grep -qE "^${DOCKER_HUB_REPOSITORY}$" ); then
+        docker pull ${DOCKER_HUB_REPOSITORY}
+    fi
+    docker run -d --name $CONTAINER_NAME -p 3128:3128 ${DOCKER_HUB_REPOSITORY} > /dev/null
+    sleep 10 # Wait proxy server starts safely.
+}
+
+killProxyServer() {
+    # Surpress all the log & error messages
+    docker kill $CONTAINER_NAME  &> /dev/null
+    docker rm $CONTAINER_NAME  &> /dev/null
+}
 # It returns url `http://example.com/URL404/file.txt`
 # which is supposed to have 404 http status.
 cl1pMockserver () {
