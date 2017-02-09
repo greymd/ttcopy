@@ -29,9 +29,16 @@ setUp () {
     # Set random id/password
     export TTCP_ID="$(cat /dev/urandom | grep -ao '[a-zA-Z0-9]' | tr -d '\n' | fold -w 128 | head -n 1)"
     export TTCP_PASSWORD="$(cat /dev/urandom | grep -ao '[a-zA-Z0-9]' | tr -d '\n' | fold -w 128 | head -n 1)"
+    echo ">>>>>>>>>>" >&2
 }
 
-# Mockserver for c1ip.net
+# It is called after each tests.
+tearDown(){
+    echo >&2
+    echo "<<<<<<<<<<" >&2
+    echo >&2
+}
+
 # Create proxy server with squid.
 # Q. Why `nc` is not used for it?
 # A. `nc` does not support proxy fowarding with HTTPS protocol.
@@ -49,6 +56,8 @@ killProxyServer() {
     docker kill $CONTAINER_NAME  &> /dev/null
     docker rm $CONTAINER_NAME  &> /dev/null
 }
+
+# Mockserver for cl1p.net
 # It returns url `http://example.com/URL404/file.txt`
 # which is supposed to have 404 http status.
 cl1pMockserver () {
