@@ -67,6 +67,38 @@ dummyString () {
     cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1
 }
 
+test_proxy () {
+    # If there is not docker on this machine, this test will be skipped.
+    if (type docker); then
+        # Kill container just in case
+        killProxyServer
+        createProxyServer
+
+        # Try copy with proxy
+        seq 10 | TTCP_PROXY="localhost:3128" ttcopy
+        assertEquals 0 $?
+
+        # Try paste with proxy
+        assertEquals "$( seq 10 )" "$( TTCP_PROXY="localhost:3128" ttpaste )"
+
+        killProxyServer
+    else
+       echo "Skip test_proxy because there is no docker on this host." >&2
+    fi
+}
+
+# Try to use stopped proxy
+test_proxy_failed () {
+    # Kill containers just in case.
+    killProxyServer
+
+    seq 10 | TTCP_PROXY="localhost:3128" ttcopy
+    assertEquals 16 $?
+
+    TTCP_PROXY="localhost:3128" ttpaste
+    assertEquals 17 $?
+}
+
 test_activator_dont_create_dupulicate_entry () {
     local oldPATH="$PATH"
     . "${TEST_DIR}/../ttcp_activate.sh"
