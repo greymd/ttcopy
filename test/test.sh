@@ -22,7 +22,7 @@ export TTCP_PASSWORD=""
 
 # Docker container which is used for proxy server.
 readonly CONTAINER_NAME="ttcopy-test-proxy"
-readonly DOCKER_HUB_REPOSITORY="greymd/$CONTAINER_NAME"
+readonly DOCKER_HUB_REPOSITORY="sameersbn/squid"
 
 # It is called before each tests.
 setUp () {
