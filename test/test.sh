@@ -43,10 +43,6 @@ tearDown(){
 # Q. Why `nc` is not used for it?
 # A. `nc` does not support proxy fowarding with HTTPS protocol.
 createProxyServer() {
-    # If there is no "greymd/ttcopy-test-proxy" image, pull it.
-    if ! ( docker images --format '{{.Repository}}' | grep -qE "^${DOCKER_HUB_REPOSITORY}$" ); then
-        docker pull ${DOCKER_HUB_REPOSITORY}
-    fi
     docker run -d --name $CONTAINER_NAME -p 3128:3128 ${DOCKER_HUB_REPOSITORY} > /dev/null
     sleep 10 # Wait proxy server starts safely.
 }
