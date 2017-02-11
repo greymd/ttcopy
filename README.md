@@ -106,6 +106,63 @@ $ ttpaste | file -
 /dev/stdin: JPEG image data, JFIF standard 1.01
 ```
 
+# Features
+
+## Options
+
+`ttcopy` and `ttpaste` commands support following options.
+
+```
+$ ttcopy --help
+  OPTIONS:
+  -h, --help                         Output a usage message and exit.
+  -V, --version                      Output the version number of ttcopy and exit.
+  -i ID, --id=ID                     Specify ID to identify the data.
+  -p PASSWORD, --password=PASSWORD   Specify password to encrypt/decrypt the data.
+```
+
+Use specific ID and password instead of `TTCP_ID` and `TTCP_PASSWORD`.
+
+```
+$ seq 10 | ttcopy -i abcdef -p ghijklmn
+Copied!
+```
+
+```
+$ ttpaste -i abcdef -p ghijklmn
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+```
+
+## Copy/Paste through proxy server
+
+Commands load shell variable `TTCP_PROXY` as their proxy server for connection.
+
+```sh
+$ echo ABCDEFG | TTCP_PROXY="http://example.proxy.server1.com:1234" ttcopy
+```
+
+```sh
+$ TTCP_PROXY="http://example.proxy.server2.com:5678" ttpaste
+ABCDEFG
+```
+
+It is helpful to edit `.bashrc` or `.zshrc` if you are always using specific proxy server.
+
+```sh
+...
+export TTCP_PROXY="http://example.proxy.server1.com:1234"
+...
+```
+
 ## LICENSE
 
 This is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).

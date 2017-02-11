@@ -48,6 +48,8 @@ _TTCP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; cd ..; pwd)"
 # Dependent commands (non POSIX commands)
 _TTCP_DEPENDENCIES="${_TTCP_DEPENDENCIES:-yes openssl curl perl gzip}"
 
+_TTCP_HTTP_CLIENT="${_TTCP_HTTP_CLIENT:-curl}"
+
 # Algorithm for encoding data
 _TTCP_ENCRYPT_ALGORITHM="${_TTCP_ENCRYPT_ALGORITHM:-aes-256-cbc}"
 
@@ -205,6 +207,15 @@ __ttcp::check_env () {
         echo "Set environment variable (TTCP_PASSWORD) or give the password by -p option." >&2 && \
         exit $_TTCP_ENOCRED
     return 0
+}
+
+__ttcp::http_client () {
+    # If TTCP_PROXY is undefined or empty...
+    if [ -z "${TTCP_PROXY}" ]; then
+        echo "${_TTCP_HTTP_CLIENT}"
+    else
+        echo "${_TTCP_HTTP_CLIENT} -x ${TTCP_PROXY}"
+    fi
 }
 
 # key -- $1

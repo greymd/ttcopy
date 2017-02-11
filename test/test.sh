@@ -20,14 +20,40 @@ TTCP_TRANSFER_SH_NG="https://example.com"
 export TTCP_ID=""
 export TTCP_PASSWORD=""
 
+# Docker container which is used for proxy server.
+readonly CONTAINER_NAME="ttcopy-test-proxy"
+readonly DOCKER_HUB_REPOSITORY="sameersbn/squid"
+
 # It is called before each tests.
 setUp () {
     # Set random id/password
     export TTCP_ID="$(cat /dev/urandom | grep -ao '[a-zA-Z0-9]' | tr -d '\n' | fold -w 128 | head -n 1)"
     export TTCP_PASSWORD="$(cat /dev/urandom | grep -ao '[a-zA-Z0-9]' | tr -d '\n' | fold -w 128 | head -n 1)"
+    echo ">>>>>>>>>>" >&2
 }
 
-# Mockserver for c1ip.net
+# It is called after each tests.
+tearDown(){
+    echo >&2
+    echo "<<<<<<<<<<" >&2
+    echo >&2
+}
+
+# Create proxy server with squid.
+# Q. Why `nc` is not used for it?
+# A. `nc` does not support proxy fowarding with HTTPS protocol.
+createProxyServer() {
+    docker run -d --name $CONTAINER_NAME -p 3128:3128 ${DOCKER_HUB_REPOSITORY} > /dev/null
+    sleep 10 # Wait proxy server starts safely.
+}
+
+killProxyServer() {
+    # Surpress all the log & error messages
+    docker kill $CONTAINER_NAME  &> /dev/null
+    docker rm $CONTAINER_NAME  &> /dev/null
+}
+
+# Mockserver for cl1p.net
 # It returns url `http://example.com/URL404/file.txt`
 # which is supposed to have 404 http status.
 cl1pMockserver () {
@@ -44,6 +70,38 @@ cl1pMockserver () {
 # Generate dummy data
 dummyString () {
     cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1
+}
+
+test_proxy () {
+    # If there is not docker on this machine, this test will be skipped.
+    if (type docker); then
+        # Kill container just in case
+        killProxyServer
+        createProxyServer
+
+        # Try copy with proxy
+        seq 10 | TTCP_PROXY="localhost:3128" ttcopy
+        assertEquals 0 $?
+
+        # Try paste with proxy
+        assertEquals "$( seq 10 )" "$( TTCP_PROXY="localhost:3128" ttpaste )"
+
+        killProxyServer
+    else
+       echo "Skip test_proxy because there is no docker on this host." >&2
+    fi
+}
+
+# Try to use stopped proxy
+test_proxy_failed () {
+    # Kill containers just in case.
+    killProxyServer
+
+    seq 10 | TTCP_PROXY="localhost:3128" ttcopy
+    assertEquals 16 $?
+
+    TTCP_PROXY="localhost:3128" ttpaste
+    assertEquals 17 $?
 }
 
 test_activator_dont_create_dupulicate_entry () {
