@@ -48,11 +48,11 @@ createProxyServer() {
 }
 
 # Generate dummy data
-dummyString () {
+randomString () {
     cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1
 }
 
-ID_PREFIX="$(dummyString)"
+ID_PREFIX="$(randomString)"
 
 # Create id with the prefix which is unique for each test session.
 # So the test using same id will not conflict even if they run in parallel.
@@ -277,8 +277,8 @@ test_id_pass_given_by_arg () {
     TTCP_ID=""
     TTCP_PASSWORD=""
     local NEW_ID_1="$(genId id1)"
-    local NEW_PASSWORD_1="$(dummyString)"
-    local NEW_ID_2="$(dummyString)"
+    local NEW_PASSWORD_1="$(randomString)"
+    local NEW_ID_2="$(randomString)"
     local NEW_PASSWORD_2="$(genId id2)"
 
     # Short option
@@ -311,13 +311,13 @@ test_id_pass_given_by_arg () {
 
     # Password is defined by the variable.
     TTCP_ID=""
-    TTCP_PASSWORD="$(dummyString)"
+    TTCP_PASSWORD="$(randomString)"
     echo "Apple Pen" | ttcopy -i "$NEW_ID_1"
     assertEquals 0 $?
     assertEquals "Apple Pen" "$(ttpaste -i "$NEW_ID_1")"
 
     # ID is defined by the variable.
-    TTCP_ID="$(dummyString)"
+    TTCP_ID="$(randomString)"
     TTCP_PASSWORD=""
     echo "Pineapple Pen" | ttcopy -p "$NEW_PASSWORD_1"
     assertEquals 0 $?
