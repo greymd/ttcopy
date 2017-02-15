@@ -47,6 +47,20 @@ createProxyServer() {
     sleep 10 # Wait proxy server starts safely.
 }
 
+# Generate dummy data
+dummyString () {
+    cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1
+}
+
+ID_PREFIX="$(dummyString)"
+
+# Create id with the prefix which is unique for each test session.
+# So the test using same id will not conflict even if they run in parallel.
+genId() {
+    local id="$1"
+    echo "${ID_PREFIX}${id}"
+}
+
 killProxyServer() {
     # Surpress all the log & error messages
     docker kill $CONTAINER_NAME  &> /dev/null
@@ -65,11 +79,6 @@ cl1pMockserver () {
     # $ echo "http://example.com/URL404/file.txt" | __ttcp::encode "$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)" | __ttcp::base64enc
     local url404="yJCQtv32TUTdk_hBCvS6qBq_Apu7JWkhqgJdZMsjhAuYGwRaUJRVArqhO4IVxgcAiWo1ZDtWP_xdTs4PJmxu8Q=="
     printf "HTTP/1.0 200 Ok\n\nTTCP[$url404]" | nc -l $port
-}
-
-# Generate dummy data
-dummyString () {
-    cat /dev/urandom | strings | grep -o '[[:alnum:]]' | tr -d '\n' | fold -w 128 | head -n 1
 }
 
 test_proxy () {
@@ -115,47 +124,47 @@ test_activator_dont_create_dupulicate_entry () {
 
 test_failure_encoding () {
     # openssl command stops with something wrong.
-    seq 5 10 | _TTCP_ENCRYPT_ALGORITHM="dummy-encoding" ttcopy -i hoge -p hoge 2>/dev/null
+    seq 5 10 | _TTCP_ENCRYPT_ALGORITHM="dummy-encoding" ttcopy -i $(genId hoge) -p hoge 2>/dev/null
     assertEquals 7 $?
 }
 
 test_failure_decoding () {
     # Password is wrong.
-    seq 5 10 | ttcopy -i myid -p mypass
-    ttpaste -i myid -p wrong_pass
+    seq 5 10 | ttcopy -i $(genId myid) -p mypass
+    ttpaste -i $(genId myid) -p wrong_pass
     assertEquals 8 $?
 
     # First time is ok, but second time is wrong.
     # This test ensures retrieved content is cached with encryption.
-    seq 5 10 | ttcopy -i myid -p mypass
-    ttpaste -i myid -p mypass > /dev/null
+    seq 5 10 | ttcopy -i $(genId myid) -p mypass
+    ttpaste -i $(genId myid) -p mypass > /dev/null
     assertEquals 0 $?
-    ttpaste -i myid -p wrong_pass > /dev/null
+    ttpaste -i $(genId myid) -p wrong_pass > /dev/null
     assertEquals 8 $?
 
     # First time is wrong, but second time is ok.
     # This test ensures retrieved url is cached with encryption.
-    seq 5 10 | ttcopy -i myid -p mypass
-    ttpaste -i myid -p wrong_pass > /dev/null
+    seq 5 10 | ttcopy -i $(genId myid) -p mypass
+    ttpaste -i $(genId myid) -p wrong_pass > /dev/null
     assertEquals 8 $?
-    ttpaste -i myid -p mypass > /dev/null
+    ttpaste -i $(genId myid) -p mypass > /dev/null
     assertEquals 0 $?
 
     # First time is wrong, then upload new stuff, and second time is ok.
     # This test ensures NOT to use the local url cache for new content.
-    seq 5 10 | ttcopy -i myid -p mypass
-    ttpaste -i myid -p wrong_pass > /dev/null
+    seq 5 10 | ttcopy -i $(genId myid) -p mypass
+    ttpaste -i $(genId myid) -p wrong_pass > /dev/null
     assertEquals 8 $?
-    echo "new content" | ttcopy -i myid -p mypass
-    assertEquals "new content" "$(ttpaste -i myid -p mypass)"
+    echo "new content" | ttcopy -i $(genId myid) -p mypass
+    assertEquals "new content" "$(ttpaste -i $(genId myid) -p mypass)"
     assertEquals 0 $?
 
     # After fail of decryption, try with different id.
     # This test ensures NOT to use the local url cache for different user.
-    seq 5 10 | ttcopy -i myid -p mypass
-    ttpaste -i myid -p wrong_pass > /dev/null
+    seq 5 10 | ttcopy -i $(genId myid) -p mypass
+    ttpaste -i $(genId myid) -p wrong_pass > /dev/null
     assertEquals 8 $?
-    ttpaste -i different_id -p mypass
+    ttpaste -i $(genId different_id) -p mypass
     assertEquals 5 $? # Nothing should be copied.
 }
 
@@ -232,11 +241,11 @@ test_option_combination () {
     assertEquals 0 $?
 
     # Help + other option
-    ttcopy --help -p password -i sample | grep -E 'Usage: ttcopy'
+    ttcopy --help -p password -i $(genId sample) | grep -E 'Usage: ttcopy'
     assertEquals 0 $?
 
     # version + password + id + help
-    ttcopy -V --help -p password -i sample | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
+    ttcopy -V --help -p password -i $(genId sample) | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
     assertEquals 0 $?
 
     # Undefined option
@@ -244,7 +253,7 @@ test_option_combination () {
     assertEquals 4 $?
 
     # Undefined options + valid options
-    seq 10 | ttcopy -Z --help -p password -i sample
+    seq 10 | ttcopy -Z --help -p password -i $(genId sample)
     assertEquals 4 $?
 
     # Undefined argument
@@ -256,7 +265,7 @@ test_option_combination () {
     assertEquals 4 $?
 
     # Undefined options + valid options
-    seq 10 | ttpaste -Z --help -p password -i sample
+    seq 10 | ttpaste -Z --help -p password -i $(genId sample)
     assertEquals 4 $?
 
     # Undefined argument
@@ -267,10 +276,10 @@ test_option_combination () {
 test_id_pass_given_by_arg () {
     TTCP_ID=""
     TTCP_PASSWORD=""
-    local NEW_ID_1="$(dummyString)"
+    local NEW_ID_1="$(genId id1)"
     local NEW_PASSWORD_1="$(dummyString)"
     local NEW_ID_2="$(dummyString)"
-    local NEW_PASSWORD_2="$(dummyString)"
+    local NEW_PASSWORD_2="$(genId id2)"
 
     # Short option
     echo 'I have a pen.' | ttcopy -i $NEW_ID_1 -p $NEW_PASSWORD_1
@@ -316,6 +325,8 @@ test_id_pass_given_by_arg () {
 }
 
 test_id_pass_given_by_arg_error () {
+    # No need to use `genId` in this test since it will fail before networking.
+
     TTCP_ID=""
     TTCP_PASSWORD=""
 
