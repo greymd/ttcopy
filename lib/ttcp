@@ -232,8 +232,8 @@ __ttcp::init () {
     # If there is any standard input, discard it.
     # If users try to use ttcopy with stdin for the first time.
     if [ ! -t 0 ]; then
-        echo "The input is discarded because credentials are not set yet." >&2
-        echo "Please try again after setting ID/Password" >&2
+        echo "Standard input is discarded because credentials are not set yet." >&2
+        echo "Please try again after setting ID/Password." >&2
         echo >&2
         cat /dev/stdin > /dev/null
     fi
