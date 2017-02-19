@@ -282,6 +282,26 @@ test_init_and_try () {
     assertEquals "$(seq 200 210)" "$(ttpaste -i $_myid -p $_mypassword)"
 }
 
+test_invalid_config_format () {
+    local _myid="$(genId myid)"
+    local _mypassword="$(randomString)"
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+
+    _TTCP_USER_HOME="${SHUNIT_TMPDIR}/invalid"
+
+    # First time
+    simulateInitializer "$_myid" "$_mypassword" "$_mypassword" 'ttcopy --init'
+    assertEquals 124 $?
+
+    # Delete one of the line
+    sed -i 's/TTCP_ID_CLIP=.*//g' $_TTCP_USER_HOME/.ttcopy/config
+
+    # Initial screen will be displayd at the second time also.
+    simulateInitializer "$_myid" "$_mypassword" "$_mypassword" 'seq 10 | ttcopy'
+    assertEquals 124 $?
+}
+
 test_proxy () {
     # If there is not docker on this machine, this test will be skipped.
     if (type docker); then

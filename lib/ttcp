@@ -214,6 +214,13 @@ __ttcp::spin () {
     _TTCP_SPIN_PID=$!
 }
 
+__ttcp::generate_credentials () {
+    TTCP_ID_CLIP=${TTCP_ID_CLIP:-"$(echo "${TTCP_ID}${TTCP_SALT1}" | __ttcp::hash)"}
+    TTCP_PASSWORD_CLIP=${TTCP_PASSWORD_CLIP:-"$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)"}
+    TTCP_ID_TRANS=${TTCP_ID_TRANS:-"$(echo "${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"}
+    TTCP_PASSWORD_TRANS=${TTCP_PASSWORD_TRANS:-"$(echo "${TTCP_PASSWORD}${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"}
+}
+
 __ttcp::init () {
     # Stop immediately in case of any errors.
     # Because this function may make strange changes.
@@ -263,9 +270,17 @@ __ttcp::init () {
     # Force remove in advance, because the file may not have writable attribute.
     rm -f $_TTCP_CONFIG_FILE
     # Create blank file.
-    echo > $_TTCP_CONFIG_FILE
-    echo "TTCP_ID=$_given_id" > $_TTCP_CONFIG_FILE
-    echo "TTCP_PASSWORD=$_given_password1" >> $_TTCP_CONFIG_FILE
+    touch $_TTCP_CONFIG_FILE
+
+    TTCP_ID="$_given_id"
+    TTCP_PASSWORD="$_given_password1"
+    __ttcp::generate_credentials
+
+    echo "TTCP_ID_CLIP=$TTCP_ID_CLIP" > $_TTCP_CONFIG_FILE
+    echo "TTCP_PASSWORD_CLIP=$TTCP_PASSWORD_CLIP" >> $_TTCP_CONFIG_FILE
+    echo "TTCP_ID_TRANS=$TTCP_ID_TRANS" >> $_TTCP_CONFIG_FILE
+    echo "TTCP_PASSWORD_TRANS=$TTCP_PASSWORD_TRANS" >> $_TTCP_CONFIG_FILE
+
     # Prohibit users (except for root & current user) from seeing the file.
     chmod 400 $_TTCP_CONFIG_FILE
     echo  >&2
@@ -281,8 +296,10 @@ __ttcp::load_config () {
     local _file="${_TTCP_CONFIG_FILE:-$1}"
     __ttcp::check_config
     if [ $? -eq 0 ]; then
-        TTCP_ID="$(cat "$_file" | head -n 1 | sed 's/^TTCP_ID=//')"
-        TTCP_PASSWORD="$(cat "$_file" | tail -n 1 | sed 's/^TTCP_PASSWORD=//')"
+        TTCP_ID_CLIP="$(cat "$_file"        | perl -nle '$. ==  1 && print' | sed 's/^TTCP_ID_CLIP=//')"
+        TTCP_PASSWORD_CLIP="$(cat "$_file"  | perl -nle '$. ==  2 && print' | sed 's/^TTCP_PASSWORD_CLIP=//')"
+        TTCP_ID_TRANS="$(cat "$_file"       | perl -nle '$. ==  3 && print' | sed 's/^TTCP_ID_TRANS=//')"
+        TTCP_PASSWORD_TRANS="$(cat "$_file" | perl -nle '$. ==  4 && print' | sed 's/^TTCP_PASSWORD_TRANS=//')"
     else
         return 1
     fi
@@ -290,12 +307,15 @@ __ttcp::load_config () {
 
 # Config file format: ~/.ttcopy/config
 # -------------------------------------------------
-# Line1:TTCP_ID=<ID for ttcopy/ttpaste>
-# Line2:TTCP_PASSWORD=<Password for ttcopy/ttpaste>
+# Line1:TTCP_ID_CLIP=...
+# Line2:TTCP_PASSWORD_CLIP=...
+# Line3:TTCP_ID_TRANS=...
+# Line4:TTCP_PASSWORD_TRANS=...
 # <EOF>
 # -------------------------------------------------
 __ttcp::check_config () {
     local _file="${_TTCP_CONFIG_FILE:-$1}"
+    local _records="TTCP_ID_CLIP TTCP_PASSWORD_CLIP TTCP_ID_TRANS TTCP_PASSWORD_TRANS"
 
     # Check existence of the file.
     if [ ! -e "$_file" ]; then
@@ -303,31 +323,16 @@ __ttcp::check_config () {
         return 1
     fi
 
-    # Check ID follows format.
-    cat "$_file" | head -n 1 | grep -qE '^TTCP_ID=.+$'
-    if [ $? -ne 0 ]; then
-        return 1
-    fi
-
-    # Check Password follows format.
-    cat "$_file" | tail -n 1 | grep -qE '^TTCP_PASSWORD=.+$'
-    if [ $? -ne 0 ]; then
-        return 1
-    fi
-
-    # Check ID/password is empty or not.
-    local _line_num=$(cat "$_file" | \
-        # Remove prefix.
-        sed 's/^TTCP_ID=//' | \
-        sed 's/^TTCP_PASSWORD=//' | \
-        # If the number of field is 0, it's empty line (or the line contains space or tab only).
-        perl -anle 'scalar (@F) > 0 && print' | \
-        # Count number of lines
-        grep -c .)
-    if [ $_line_num -ne 2 ]; then
-        # Invalid format
-        return 1
-    fi
+    # Check format of the file.
+    local _counter=0;
+    while read _attr ; do
+        _counter=$(($_counter + 1))
+        cat "$_file" | head -n $_counter | tail -n 1 | grep -qE "^$_attr=.+$"
+        # If there is any parts which does not follow the format, return error.
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
+    done < <(echo "$_records" | tr ' ' '\n')
 
     return 0
 }

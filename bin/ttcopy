@@ -18,10 +18,9 @@ __ttcp::spin "Copying..."
 
 _HTTP_CLIENT="$(__ttcp::http_client)"
 
-TTCP_ID_CLIP="$(echo "${TTCP_ID}${TTCP_SALT1}" | __ttcp::hash)"
-TTCP_PASSWORD_CLIP="$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)"
-TTCP_ID_TRANS="$(echo "${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"
-TTCP_PASSWORD_TRANS="$(echo "${TTCP_PASSWORD}${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"
+# Following credentials will be prepared.
+# TTCP_ID_CLIP, TTCP_PASSWORD_CLIP, TTCP_ID_TRANS, TTCP_PASSWORD_TRANS
+__ttcp::generate_credentials
 
 TRANS_URL=$(${_HTTP_CLIENT} -so- --fail --upload-file <(cat | __ttcp::encode "${TTCP_PASSWORD_TRANS}") $TTCP_TRANSFER_SH/$TTCP_ID_TRANS );
 
