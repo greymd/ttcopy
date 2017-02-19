@@ -19,11 +19,23 @@ readonly _TTCP_EINVAL=4
 # Nothing has been copied yet
 readonly _TTCP_ENOCONTENT=5
 
+# Passwords do not match
+readonly _TTCP_EUNMATCH=6
+
 # Failed to encode something.
 readonly _TTCP_EENCODE=7
 
 # Failed to decode something.
 readonly _TTCP_EDECODE=8
+
+# Failed to upload/download the content
+readonly _TTCP_ECONTTRANS=16
+
+# Failed to get the content url
+readonly _TTCP_ECONTURL=17
+
+# Credentials are initialized (btw, 1.2.4 sounds like "initi" in japanese).
+readonly _TTCP_EINITCRED=124
 
 # Necessary commands are not found
 readonly _TTCP_ENOCMD=127
@@ -31,11 +43,6 @@ readonly _TTCP_ENOCMD=127
 # Terminated by Ctl-C
 readonly _TTCP_EINTR=130
 
-# Failed to upload/download the content
-readonly _TTCP_ECONTTRANS=16
-
-# Failed to get the content url
-readonly _TTCP_ECONTURL=17
 
 # ===============
 
