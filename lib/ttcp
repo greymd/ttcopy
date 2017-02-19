@@ -276,7 +276,8 @@ __ttcp::init () {
     TTCP_PASSWORD="$_given_password1"
     __ttcp::generate_credentials
 
-    echo "TTCP_ID_CLIP=$TTCP_ID_CLIP" > $_TTCP_CONFIG_FILE
+    echo "TTCP_ID=$TTCP_ID" >> $_TTCP_CONFIG_FILE
+    echo "TTCP_ID_CLIP=$TTCP_ID_CLIP" >> $_TTCP_CONFIG_FILE
     echo "TTCP_PASSWORD_CLIP=$TTCP_PASSWORD_CLIP" >> $_TTCP_CONFIG_FILE
     echo "TTCP_ID_TRANS=$TTCP_ID_TRANS" >> $_TTCP_CONFIG_FILE
     echo "TTCP_PASSWORD_TRANS=$TTCP_PASSWORD_TRANS" >> $_TTCP_CONFIG_FILE
@@ -296,10 +297,11 @@ __ttcp::load_config () {
     local _file="${_TTCP_CONFIG_FILE:-$1}"
     __ttcp::check_config
     if [ $? -eq 0 ]; then
-        TTCP_ID_CLIP="$(cat "$_file"        | perl -nle '$. ==  1 && print' | sed 's/^TTCP_ID_CLIP=//')"
-        TTCP_PASSWORD_CLIP="$(cat "$_file"  | perl -nle '$. ==  2 && print' | sed 's/^TTCP_PASSWORD_CLIP=//')"
-        TTCP_ID_TRANS="$(cat "$_file"       | perl -nle '$. ==  3 && print' | sed 's/^TTCP_ID_TRANS=//')"
-        TTCP_PASSWORD_TRANS="$(cat "$_file" | perl -nle '$. ==  4 && print' | sed 's/^TTCP_PASSWORD_TRANS=//')"
+        TTCP_ID="$(cat "$_file"             | head -n 1 | tail -n 1 | sed 's/^TTCP_ID=//')"
+        TTCP_ID_CLIP="$(cat "$_file"        | head -n 2 | tail -n 1 | sed 's/^TTCP_ID_CLIP=//')"
+        TTCP_PASSWORD_CLIP="$(cat "$_file"  | head -n 3 | tail -n 1 | sed 's/^TTCP_PASSWORD_CLIP=//')"
+        TTCP_ID_TRANS="$(cat "$_file"       | head -n 4 | tail -n 1 | sed 's/^TTCP_ID_TRANS=//')"
+        TTCP_PASSWORD_TRANS="$(cat "$_file" | head -n 5 | tail -n 1 | sed 's/^TTCP_PASSWORD_TRANS=//')"
     else
         return 1
     fi
@@ -307,15 +309,16 @@ __ttcp::load_config () {
 
 # Config file format: ~/.ttcopy/config
 # -------------------------------------------------
-# Line1:TTCP_ID_CLIP=...
-# Line2:TTCP_PASSWORD_CLIP=...
-# Line3:TTCP_ID_TRANS=...
-# Line4:TTCP_PASSWORD_TRANS=...
+# Line1:TTCP_ID=...
+# Line2:TTCP_ID_CLIP=...
+# Line3:TTCP_PASSWORD_CLIP=...
+# Line4:TTCP_ID_TRANS=...
+# Line5:TTCP_PASSWORD_TRANS=...
 # <EOF>
 # -------------------------------------------------
 __ttcp::check_config () {
     local _file="${_TTCP_CONFIG_FILE:-$1}"
-    local _records="TTCP_ID_CLIP TTCP_PASSWORD_CLIP TTCP_ID_TRANS TTCP_PASSWORD_TRANS"
+    local _records="TTCP_ID TTCP_ID_CLIP TTCP_PASSWORD_CLIP TTCP_ID_TRANS TTCP_PASSWORD_TRANS"
 
     # Check existence of the file.
     if [ ! -e "$_file" ]; then
