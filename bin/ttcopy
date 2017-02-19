@@ -10,6 +10,7 @@ source "$_TTCP_DIR"/lib/ttcp
 # __ttcp::opts is called prior to __ttcp::check_env
 # Because id/password might be given by user.
 __ttcp::opts "$@"
+__ttcp::is_credential_valid || __ttcp::load_config || __ttcp::init
 __ttcp::check_env
 
 trap "__ttcp::unspin; kill 0; exit $_TTCP_EINTR" SIGHUP SIGINT SIGQUIT SIGTERM
