@@ -272,14 +272,17 @@ test_init_and_try () {
     TTCP_ID=""
     TTCP_PASSWORD=""
 
+    _TTCP_USER_HOME="${SHUNIT_TMPDIR}/try"
+
     # First time
     simulateInitializer "$_myid" "$_mypassword" "$_mypassword" 'ttcopy --init'
 
-    # Attention: _TTCP_USER_HOME="${SHUNIT_TMPDIR}"
     seq 200 210 | ttcopy
 
     assertEquals "$(seq 200 210)" "$(ttpaste)"
     assertEquals "$(seq 200 210)" "$(ttpaste -i $_myid -p $_mypassword)"
+
+    rm -rf "$_TTCP_USER_HOME"
 }
 
 test_invalid_config_format () {
@@ -295,11 +298,49 @@ test_invalid_config_format () {
     assertEquals 124 $?
 
     # Delete one of the line
-    sed -i 's/TTCP_ID_CLIP=.*//g' $_TTCP_USER_HOME/.ttcopy/config
+    cat "$_TTCP_USER_HOME/.ttcopy/config" | grep -Ev '^TTCP_ID_CLIP=.*$' > "$_TTCP_USER_HOME/.ttcopy/config_tmp"
+    mv "$_TTCP_USER_HOME/.ttcopy/config_tmp" "$_TTCP_USER_HOME/.ttcopy/config"
 
     # Initial screen will be displayd at the second time also.
     simulateInitializer "$_myid" "$_mypassword" "$_mypassword" 'seq 10 | ttcopy'
     assertEquals 124 $?
+
+    rm -rf "$_TTCP_USER_HOME"
+}
+
+test_check_credential_priority () {
+    local _id_conf="$(genId myid_conf)"
+    local _password_conf="$(randomString)"
+
+    local _id_env="$(genId myid_env)"
+    local _password_env="$(randomString)"
+
+    local _id_opt="$(genId myid_opt)"
+    local _password_opt="$(randomString)"
+
+    # Prepare ID/password environment variables.
+    TTCP_ID="$_id_env"
+    TTCP_PASSWORD="$_password_env"
+
+    # Prepare config file
+    _TTCP_USER_HOME="${SHUNIT_TMPDIR}/priority"
+    simulateInitializer "$_id_conf" "$_password_conf" "$_password_conf" 'ttcopy --init'
+
+    # Option is most prioritized.
+    seq 100 200 | ttcopy -i "$_id_opt" -p "$_password_opt"
+    assertEquals "$(seq 100 200)" "$(ttpaste -i "$_id_opt" -p "$_password_opt")"
+
+    # If environment variables are available, use them.
+    seq 100 250 | ttcopy
+    assertEquals "$(seq 100 250)" "$(ttpaste -i "$_id_env" -p "$_password_env")"
+
+    # If either environment variable is empty, use config file.
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    seq 100 300 | ttcopy
+    assertEquals "$(seq 100 300)" "$(ttpaste -i "$_id_conf" -p "$_password_conf")"
+
+    rm -rf "$_TTCP_USER_HOME"
 }
 
 test_proxy () {
