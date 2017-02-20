@@ -15,32 +15,32 @@ Provide copying and pasting within multiple hosts through the Web.
   * zsh (tested ver: 4.3, 5.0)
   * bash (tested ver: 3.2, 4.2)
 
-## Dependent commands
+## Requirements
   * openssl
   * curl
 
 # Installation
-First of all, please prepare ID and Password **as you like**.
-Be lazy! You are **NOT** required to register them on any services.
-The data you copied can be pasted within the hosts having same ID/Password.
-
-After that, set up `ttcopy` on the hosts which you want to make share same data.
+Set up `ttcopy` on the hosts which you want to make share same data.
 Please follow the following instructions to install it.
 
 ## With [zplug](https://zplug.sh) (for zsh users)
 
 If you are using zplug, it is easy and recommended way.
-Add those lines to `.zshrc`.
+Add this line to `.zshrc`.
 
 ```sh
-# Set ID and Password you decided.
-export TTCP_ID="your_id"
-export TTCP_PASSWORD="your_password"
-
 zplug "greymd/ttcopy"
 ```
 
 That's all 🎉.
+
+## With [Antigen](http://antigen.sharats.me/) (for zsh users)
+This way is almost same as other plugin managers for zsh.
+For example, add this line to `.zshrc` if you are using [Antigen](http://antigen.sharats.me/).
+
+```sh
+antigen bundle "greymd/ttcopy"
+```
 
 ## Manual Installation
 
@@ -57,10 +57,6 @@ $ git clone https://github.com/greymd/ttcopy.git ~/ttcopy
 Add following lines.
 
 ```sh
-# Set ID and Password you decided.
-export TTCP_ID="your_id"
-export TTCP_PASSWORD="your_password"
-
 source ~/ttcopy/ttcp_activate.sh
 ```
 
@@ -76,6 +72,23 @@ For example,
 cp -rf ~/ttcopy/bin ~/ttcopy/lib /usr/local
 
 echo "export PATH=$PATH:/usr/local/bin" >> ~/.zshrc" # if you need
+```
+
+# Configuration
+First of all, `ttcopy` command displays the screen to set default ID/Password.
+Please 
+ID and Password **as you like**. Be lazy! You are **NOT** required to register them on any services.
+The data you copied can be pasted within the hosts having same ID/Password.
+
+```sh
+$ ttcopy
+Set default ID/Password.
+Enter ID for ttcopy/ttpaste:myid001   #<= Enter your ID ("myid001" is just an example).
+Enter password for ttcopy/ttpaste:    #<= Enter your password.
+Enter same password again:            #<= Enter again.
+
+Created credential file '/Users/user/.ttcopy/config'
+Execute 'ttcopy --init' to show this screen again.
 ```
 
 # Examples
@@ -114,14 +127,17 @@ $ ttpaste | file -
 
 ```
 $ ttcopy --help
+  Usage: ttcopy [OPTIONS]
+
   OPTIONS:
   -h, --help                         Output a usage message and exit.
   -V, --version                      Output the version number of ttcopy and exit.
   -i ID, --id=ID                     Specify ID to identify the data.
   -p PASSWORD, --password=PASSWORD   Specify password to encrypt/decrypt the data.
+  --init                             Set default ID and password.
 ```
 
-Use specific ID and password instead of `TTCP_ID` and `TTCP_PASSWORD`.
+Use non-default ID and password.
 
 ```
 $ seq 10 | ttcopy -i abcdef -p ghijklmn
@@ -155,12 +171,10 @@ $ TTCP_PROXY="http://example.proxy.server2.com:5678" ttpaste
 ABCDEFG
 ```
 
-It is helpful to edit `.bashrc` or `.zshrc` if you are always using specific proxy server.
+It is helpful to add this line to `.bashrc` or `.zshrc` if you are always using specific proxy server.
 
 ```sh
-...
 export TTCP_PROXY="http://example.proxy.server1.com:1234"
-...
 ```
 
 ## LICENSE
