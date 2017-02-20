@@ -35,7 +35,7 @@ zplug "greymd/ttcopy"
 That's all 🎉.
 
 ## With [Antigen](http://antigen.sharats.me/) (for zsh users)
-This way is almost same as other plugin managers for zsh.
+The above way is almost same for the other plugin managers.
 For example, add this line to `.zshrc` if you are using [Antigen](http://antigen.sharats.me/).
 
 ```sh
@@ -75,10 +75,9 @@ echo "export PATH=$PATH:/usr/local/bin" >> ~/.zshrc" # if you need
 ```
 
 # Configuration
-First of all, `ttcopy` command displays the screen to set default ID/Password.
-Please 
-ID and Password **as you like**. Be lazy! You are **NOT** required to register them on any services.
-The data you copied can be pasted within the hosts having same ID/Password.
+First of all, `ttcopy` command displays the screen to let you set default ID and Password.
+Please prepare ID and Password **as you like**. Be lazy! You are **NOT** required to register them on any services.
+The data you copied can be pasted within the hosts having same ID and Password.
 
 ```sh
 $ ttcopy
