@@ -269,9 +269,9 @@ test_init_multiple () {
 test_init_and_try () {
     local _myid="$(genId myid)"
     local _mypassword="$(randomString)"
+
     TTCP_ID=""
     TTCP_PASSWORD=""
-
     _TTCP_USER_HOME="${SHUNIT_TMPDIR}/try"
 
     # First time
@@ -280,7 +280,7 @@ test_init_and_try () {
     seq 200 210 | ttcopy
 
     assertEquals "$(seq 200 210)" "$(ttpaste)"
-    assertEquals "$(seq 200 210)" "$(ttpaste -i $_myid -p $_mypassword)"
+    assertEquals "$(seq 200 210)" "$(ttpaste -i "$_myid" -p "$_mypassword")"
 
     rm -rf "$_TTCP_USER_HOME"
 }
@@ -299,6 +299,8 @@ test_invalid_config_format () {
 
     # Delete one of the line
     cat "$_TTCP_USER_HOME/.ttcopy/config" | grep -Ev '^TTCP_ID_CLIP=.*$' > "$_TTCP_USER_HOME/.ttcopy/config_tmp"
+    # Force delete. Because permission is read-only.
+    rm -f "$_TTCP_USER_HOME/.ttcopy/config"
     mv "$_TTCP_USER_HOME/.ttcopy/config_tmp" "$_TTCP_USER_HOME/.ttcopy/config"
 
     # Initial screen will be displayd at the second time also.
@@ -336,7 +338,7 @@ test_check_credential_priority () {
 
     # If either environment variable is empty, use config file.
     TTCP_ID=""
-    TTCP_PASSWORD=""
+    TTCP_PASSWORD="test"
     seq 100 300 | ttcopy
     assertEquals "$(seq 100 300)" "$(ttpaste -i "$_id_conf" -p "$_password_conf")"
 

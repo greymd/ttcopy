@@ -34,7 +34,7 @@ readonly _TTCP_ECONTTRANS=16
 # Failed to get the content url
 readonly _TTCP_ECONTURL=17
 
-# Credentials are initialized (btw, 1.2.4 sounds like "initi" in japanese).
+# Credentials are initialized
 readonly _TTCP_EINITCRED=124
 
 # Necessary commands are not found
@@ -276,7 +276,7 @@ __ttcp::init () {
     TTCP_PASSWORD="$_given_password1"
     __ttcp::generate_credentials
 
-    echo "TTCP_ID=$TTCP_ID" >> $_TTCP_CONFIG_FILE
+    echo "TTCP_ID=$TTCP_ID" > $_TTCP_CONFIG_FILE
     echo "TTCP_ID_CLIP=$TTCP_ID_CLIP" >> $_TTCP_CONFIG_FILE
     echo "TTCP_PASSWORD_CLIP=$TTCP_PASSWORD_CLIP" >> $_TTCP_CONFIG_FILE
     echo "TTCP_ID_TRANS=$TTCP_ID_TRANS" >> $_TTCP_CONFIG_FILE
@@ -295,16 +295,12 @@ __ttcp::init () {
 
 __ttcp::load_config () {
     local _file="${_TTCP_CONFIG_FILE:-$1}"
-    __ttcp::check_config
-    if [ $? -eq 0 ]; then
-        TTCP_ID="$(cat "$_file"             | head -n 1 | tail -n 1 | sed 's/^TTCP_ID=//')"
-        TTCP_ID_CLIP="$(cat "$_file"        | head -n 2 | tail -n 1 | sed 's/^TTCP_ID_CLIP=//')"
-        TTCP_PASSWORD_CLIP="$(cat "$_file"  | head -n 3 | tail -n 1 | sed 's/^TTCP_PASSWORD_CLIP=//')"
-        TTCP_ID_TRANS="$(cat "$_file"       | head -n 4 | tail -n 1 | sed 's/^TTCP_ID_TRANS=//')"
-        TTCP_PASSWORD_TRANS="$(cat "$_file" | head -n 5 | tail -n 1 | sed 's/^TTCP_PASSWORD_TRANS=//')"
-    else
-        return 1
-    fi
+    TTCP_ID="$(cat "$_file"             | head -n 1 | tail -n 1 | sed 's/^TTCP_ID=//')"
+    TTCP_ID_CLIP="$(cat "$_file"        | head -n 2 | tail -n 1 | sed 's/^TTCP_ID_CLIP=//')"
+    TTCP_PASSWORD_CLIP="$(cat "$_file"  | head -n 3 | tail -n 1 | sed 's/^TTCP_PASSWORD_CLIP=//')"
+    TTCP_ID_TRANS="$(cat "$_file"       | head -n 4 | tail -n 1 | sed 's/^TTCP_ID_TRANS=//')"
+    TTCP_PASSWORD_TRANS="$(cat "$_file" | head -n 5 | tail -n 1 | sed 's/^TTCP_PASSWORD_TRANS=//')"
+    return 0
 }
 
 # Config file format: ~/.ttcopy/config
@@ -340,7 +336,7 @@ __ttcp::check_config () {
     return 0
 }
 
-__ttcp::is_credential_valid() {
+__ttcp::is_credential_valid () {
     [ -z "$TTCP_ID" ] && \
         return $_TTCP_ENOCRED
     [ -z "$TTCP_PASSWORD" ] && \
@@ -348,7 +344,7 @@ __ttcp::is_credential_valid() {
     return 0
 }
 
-__ttcp::check_env () {
+__ttcp::is_dependency_installed () {
     while read cmd ; do
         type $cmd > /dev/null 2>&1
         if [ $? -ne 0 ]; then
