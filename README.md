@@ -82,11 +82,11 @@ The data you copied can be pasted within the hosts having same ID and Password.
 ```sh
 $ ttcopy
 Set default ID/Password.
-Enter ID for ttcopy/ttpaste:myid001   #<= Enter your ID ("myid001" is just an example).
+Enter ID for ttcopy/ttpaste: myid001   #<= Enter your ID ("myid001" is just an example).
 Enter password for ttcopy/ttpaste:    #<= Enter your password.
 Enter same password again:            #<= Enter again.
 
-Created credential file '/Users/user/.ttcopy/config'
+Created credential file '/home/user/.ttcopy/config'
 Execute 'ttcopy --init' to show this screen again.
 ```
 

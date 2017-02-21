@@ -248,14 +248,14 @@ __ttcp::init () {
     echo "Set default ID/Password." >&2
     # Following messages are similar to ssh-keygen's one.
 
-    printf "Enter ID for ttcopy/ttpaste:" >&2
+    printf "Enter ID for ttcopy/ttpaste: " >&2
     read _given_id < ${INPUT_DEVICE}
 
-    printf "Enter password for ttcopy/ttpaste:" >&2
+    printf "Enter password for ttcopy/ttpaste: " >&2
     read -s _given_password1 < ${INPUT_DEVICE}
     echo >&2
 
-    printf "Enter same password again:" >&2
+    printf "Enter same password again: " >&2
     read -s _given_password2 < ${INPUT_DEVICE}
     echo >&2
 
