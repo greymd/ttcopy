@@ -283,7 +283,7 @@ __ttcp::init () {
     echo "TTCP_PASSWORD_TRANS=$TTCP_PASSWORD_TRANS" >> $_TTCP_CONFIG_FILE
 
     # Prohibit users (except for root & current user) from seeing the file.
-    chmod 400 $_TTCP_CONFIG_FILE
+    chmod 600 $_TTCP_CONFIG_FILE
     echo  >&2
     echo "Created credential file '$_TTCP_CONFIG_FILE'" >&2
     echo "Execute '$_cmd --init' to show this screen again." >&2
