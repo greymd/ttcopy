@@ -42,6 +42,17 @@ For example, add this line to `.zshrc` if you are using [Antigen](http://antigen
 antigen bundle "greymd/ttcopy"
 ```
 
+## With [Homebrew](https://github.com/Homebrew/brew) (for macOS users)
+
+```sh
+# Install
+$ brew tap greymd/ttcopy
+$ brew install greymd/ttcopy/ttcopy
+
+# Uninstall
+$ brew uninstall greymd/ttcopy/ttcopy
+```
+
 ## Manual Installation
 
 If you are not using `zplug` (includeing bash users), follow below steps
