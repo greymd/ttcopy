@@ -33,7 +33,7 @@ setUp () {
     # TMPDIR does not work on particular environments.
     export _TTCP_USER_HOME="${SHUNIT_TMPDIR}"
     # Delete in advance
-    rm -rf "$_TTCP_USER_HOME/.ttcopy"
+    rm -rf "$_TTCP_USER_HOME/.config/ttcopy"
     echo ">>>>>>>>>>" >&2
 }
 
@@ -298,10 +298,9 @@ test_invalid_config_format () {
     assertEquals 124 $?
 
     # Delete one of the line
-    cat "$_TTCP_USER_HOME/.ttcopy/config" | grep -Ev '^TTCP_ID_CLIP=.*$' > "$_TTCP_USER_HOME/.ttcopy/config_tmp"
-    # Force delete. Because permission is read-only.
-    rm -f "$_TTCP_USER_HOME/.ttcopy/config"
-    mv "$_TTCP_USER_HOME/.ttcopy/config_tmp" "$_TTCP_USER_HOME/.ttcopy/config"
+    cat "$_TTCP_USER_HOME/.config/ttcopy/config" | grep -Ev '^TTCP_ID_CLIP=.*$' > "$_TTCP_USER_HOME/.config/ttcopy/config_tmp"
+    rm -f "$_TTCP_USER_HOME/.config/ttcopy/config"
+    mv "$_TTCP_USER_HOME/.config/ttcopy/config_tmp" "$_TTCP_USER_HOME/.config/ttcopy/config"
 
     # Initial screen will be displayd at the second time also.
     simulateInitializer "$_myid" "$_mypassword" "$_mypassword" 'seq 10 | ttcopy'

@@ -60,7 +60,7 @@ INPUT_DEVICE="/dev/tty"
 # This is quite rare case (but it can be happened).
 _USER_HOME="${HOME:-/etc}"
 _TTCP_USER_HOME="${_TTCP_USER_HOME:-$_USER_HOME}"
-_TTCP_CONFIG_DIR="$_TTCP_USER_HOME/.ttcopy"
+_TTCP_CONFIG_DIR="$_TTCP_USER_HOME/.config/ttcopy"
 _TTCP_CONFIG_FILE="$_TTCP_CONFIG_DIR/config"
 
 # Dependent commands (non POSIX commands)
