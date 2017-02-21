@@ -19,11 +19,23 @@ readonly _TTCP_EINVAL=4
 # Nothing has been copied yet
 readonly _TTCP_ENOCONTENT=5
 
+# Passwords do not match
+readonly _TTCP_EUNMATCH=6
+
 # Failed to encode something.
 readonly _TTCP_EENCODE=7
 
 # Failed to decode something.
 readonly _TTCP_EDECODE=8
+
+# Failed to upload/download the content
+readonly _TTCP_ECONTTRANS=16
+
+# Failed to get the content url
+readonly _TTCP_ECONTURL=17
+
+# Credentials are initialized
+readonly _TTCP_EINITCRED=124
 
 # Necessary commands are not found
 readonly _TTCP_ENOCMD=127
@@ -31,11 +43,6 @@ readonly _TTCP_ENOCMD=127
 # Terminated by Ctl-C
 readonly _TTCP_EINTR=130
 
-# Failed to upload/download the content
-readonly _TTCP_ECONTTRANS=16
-
-# Failed to get the content url
-readonly _TTCP_ECONTURL=17
 
 # ===============
 
@@ -44,6 +51,17 @@ readonly _TTCP_ECONTURL=17
 # Based on http://stackoverflow.com/a/246128
 # then added zsh support from http://stackoverflow.com/a/23259585 .
 _TTCP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; cd ..; pwd)"
+
+# NOTE: "/dev/tty" is bound to the input device of "current process".
+# Ref: http://tldp.org/HOWTO/Text-Terminal-HOWTO-7.html#ss7.3
+INPUT_DEVICE="/dev/tty"
+
+# Prevent ".ttcopy" being created under root / dir in any case.
+# This is quite rare case (but it can be happened).
+_USER_HOME="${HOME:-/etc}"
+_TTCP_USER_HOME="${_TTCP_USER_HOME:-$_USER_HOME}"
+_TTCP_CONFIG_DIR="$_TTCP_USER_HOME/.config/ttcopy"
+_TTCP_CONFIG_FILE="$_TTCP_CONFIG_DIR/config"
 
 # Dependent commands (non POSIX commands)
 _TTCP_DEPENDENCIES="${_TTCP_DEPENDENCIES:-yes openssl curl perl gzip}"
@@ -88,6 +106,7 @@ __ttcp::usage () {
     echo "  -V, --version                      Output the version number of $_cmd and exit."
     echo "  -i ID, --id=ID                     Specify ID to identify the data."
     echo "  -p PASSWORD, --password=PASSWORD   Specify password to encrypt/decrypt the data."
+    echo "  --init                             Set default ID and password."
 }
 
 __ttcp::opts () {
@@ -113,6 +132,10 @@ __ttcp::opts () {
             --password=*)
                 TTCP_PASSWORD="${1#--password=}"
                 shift
+                ;;
+            --init)
+                # exit in the function
+                __ttcp::init
                 ;;
 
             # Short options
@@ -191,7 +214,137 @@ __ttcp::spin () {
     _TTCP_SPIN_PID=$!
 }
 
-__ttcp::check_env () {
+__ttcp::generate_credentials () {
+    TTCP_ID_CLIP=${TTCP_ID_CLIP:-"$(echo "${TTCP_ID}${TTCP_SALT1}" | __ttcp::hash)"}
+    TTCP_PASSWORD_CLIP=${TTCP_PASSWORD_CLIP:-"$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)"}
+    TTCP_ID_TRANS=${TTCP_ID_TRANS:-"$(echo "${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"}
+    TTCP_PASSWORD_TRANS=${TTCP_PASSWORD_TRANS:-"$(echo "${TTCP_PASSWORD}${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"}
+}
+
+__ttcp::init () {
+    # Stop immediately in case of any errors.
+    # Because this function may make strange changes.
+    set -e
+
+    # Get a filename calling the function.
+    # http://stackoverflow.com/a/192319/
+    local _file="${0##*/}"
+    # Remove file's extention
+    local _cmd="${_file%.*}"
+
+    local _given_id=""
+    local _given_password1=""
+    local _given_password2=""
+
+    # If there is any standard input, discard it.
+    # If users try to use ttcopy with stdin for the first time.
+    if [ ! -t 0 ]; then
+        echo "Standard input is discarded because credentials are not set yet." >&2
+        echo "Please try again after setting ID/Password." >&2
+        echo >&2
+        cat /dev/stdin > /dev/null
+    fi
+
+    echo "Set default ID/Password." >&2
+    # Following messages are similar to ssh-keygen's one.
+
+    printf "Enter ID for ttcopy/ttpaste: " >&2
+    read _given_id < ${INPUT_DEVICE}
+
+    printf "Enter password for ttcopy/ttpaste: " >&2
+    read -s _given_password1 < ${INPUT_DEVICE}
+    echo >&2
+
+    printf "Enter same password again: " >&2
+    read -s _given_password2 < ${INPUT_DEVICE}
+    echo >&2
+
+    # Check passwords
+    if [[ "$_given_password1" !=  "$_given_password2" ]]; then
+        echo "Passwords do not match. Try again." >&2
+        exit $_TTCP_EUNMATCH
+    fi
+
+    # Try to create a directory to store credentials in any case.
+    mkdir -p "$_TTCP_CONFIG_DIR"
+    # Force remove in advance, because the file may not have writable attribute.
+    rm -f $_TTCP_CONFIG_FILE
+    # Create blank file.
+    touch $_TTCP_CONFIG_FILE
+
+    TTCP_ID="$_given_id"
+    TTCP_PASSWORD="$_given_password1"
+    __ttcp::generate_credentials
+
+    echo "TTCP_ID=$TTCP_ID" > $_TTCP_CONFIG_FILE
+    echo "TTCP_ID_CLIP=$TTCP_ID_CLIP" >> $_TTCP_CONFIG_FILE
+    echo "TTCP_PASSWORD_CLIP=$TTCP_PASSWORD_CLIP" >> $_TTCP_CONFIG_FILE
+    echo "TTCP_ID_TRANS=$TTCP_ID_TRANS" >> $_TTCP_CONFIG_FILE
+    echo "TTCP_PASSWORD_TRANS=$TTCP_PASSWORD_TRANS" >> $_TTCP_CONFIG_FILE
+
+    # Prohibit users (except for root & current user) from seeing the file.
+    chmod 600 $_TTCP_CONFIG_FILE
+    echo  >&2
+    echo "Created credential file '$_TTCP_CONFIG_FILE'" >&2
+    echo "Execute '$_cmd --init' to show this screen again." >&2
+
+    # Unset errexit
+    set +e
+    exit $_TTCP_EINITCRED
+}
+
+__ttcp::load_config () {
+    local _file="${_TTCP_CONFIG_FILE:-$1}"
+    TTCP_ID="$(cat "$_file"             | head -n 1 | tail -n 1 | sed 's/^TTCP_ID=//')"
+    TTCP_ID_CLIP="$(cat "$_file"        | head -n 2 | tail -n 1 | sed 's/^TTCP_ID_CLIP=//')"
+    TTCP_PASSWORD_CLIP="$(cat "$_file"  | head -n 3 | tail -n 1 | sed 's/^TTCP_PASSWORD_CLIP=//')"
+    TTCP_ID_TRANS="$(cat "$_file"       | head -n 4 | tail -n 1 | sed 's/^TTCP_ID_TRANS=//')"
+    TTCP_PASSWORD_TRANS="$(cat "$_file" | head -n 5 | tail -n 1 | sed 's/^TTCP_PASSWORD_TRANS=//')"
+    return 0
+}
+
+# Config file format: ~/.ttcopy/config
+# -------------------------------------------------
+# Line1:TTCP_ID=...
+# Line2:TTCP_ID_CLIP=...
+# Line3:TTCP_PASSWORD_CLIP=...
+# Line4:TTCP_ID_TRANS=...
+# Line5:TTCP_PASSWORD_TRANS=...
+# <EOF>
+# -------------------------------------------------
+__ttcp::check_config () {
+    local _file="${_TTCP_CONFIG_FILE:-$1}"
+    local _records="TTCP_ID TTCP_ID_CLIP TTCP_PASSWORD_CLIP TTCP_ID_TRANS TTCP_PASSWORD_TRANS"
+
+    # Check existence of the file.
+    if [ ! -e "$_file" ]; then
+        # Does not exist.
+        return 1
+    fi
+
+    # Check format of the file.
+    local _counter=0;
+    while read _attr ; do
+        _counter=$(($_counter + 1))
+        cat "$_file" | head -n $_counter | tail -n 1 | grep -qE "^$_attr=.+$"
+        # If there is any parts which does not follow the format, return error.
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
+    done < <(echo "$_records" | tr ' ' '\n')
+
+    return 0
+}
+
+__ttcp::is_credential_valid () {
+    [ -z "$TTCP_ID" ] && \
+        return $_TTCP_ENOCRED
+    [ -z "$TTCP_PASSWORD" ] && \
+        return $_TTCP_ENOCRED
+    return 0
+}
+
+__ttcp::is_dependency_installed () {
     while read cmd ; do
         type $cmd > /dev/null 2>&1
         if [ $? -ne 0 ]; then
@@ -199,13 +352,6 @@ __ttcp::check_env () {
             exit $_TTCP_ENOCMD
         fi
     done < <(echo "$_TTCP_DEPENDENCIES" | tr ' ' '\n')
-
-    [ -z "$TTCP_ID" ] && \
-        echo "Set environment variable (TTCP_ID) or give the ID by -i option." >&2 && \
-        exit $_TTCP_ENOCRED
-    [ -z "$TTCP_PASSWORD" ] && \
-        echo "Set environment variable (TTCP_PASSWORD) or give the password by -p option." >&2 && \
-        exit $_TTCP_ENOCRED
     return 0
 }
 

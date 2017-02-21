@@ -7,10 +7,16 @@
 _TTCP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; cd ..; pwd)"
 source "$_TTCP_DIR"/lib/ttcp
 
-# __ttcp::opts is called prior to __ttcp::check_env
-# Because id/password might be given by user.
+# Get options
 __ttcp::opts "$@"
-__ttcp::check_env
+# Check whether TTCP_ID and TTCP_PASSWORD are set or not.
+__ttcp::is_credential_valid || \
+    # If not, check config file and load it.
+    { __ttcp::check_config && __ttcp::load_config; } || \
+    # If config could not be loaded, initial screen is shown.
+    __ttcp::init
+
+__ttcp::is_dependency_installed
 
 trap "__ttcp::unspin; kill 0; exit $_TTCP_EINTR" SIGHUP SIGINT SIGQUIT SIGTERM
 __ttcp::spin "Pasting..."
@@ -27,10 +33,9 @@ check_decoding_failure() {
 
 _HTTP_CLIENT="$(__ttcp::http_client)"
 
-TTCP_ID_CLIP="$(echo "${TTCP_ID}${TTCP_SALT1}" | __ttcp::hash)"
-TTCP_PASSWORD_CLIP="$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)"
-# TTCP_ID_TRANS="$(echo "${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"
-TTCP_PASSWORD_TRANS="$(echo "${TTCP_PASSWORD}${TTCP_ID}${TTCP_SALT2}" | __ttcp::hash)"
+# Following credentials will be prepared.
+# TTCP_ID_CLIP, TTCP_PASSWORD_CLIP, TTCP_ID_TRANS, TTCP_PASSWORD_TRANS
+__ttcp::generate_credentials
 
 TTCP_LASTPASTE_PATH="${TTCP_LASTPASTE_PATH_PREFIX}${TTCP_ID}"
 TTCP_LASTURL_PATH="${TTCP_LASTPASTE_PATH_PREFIX}${TTCP_ID}_url"

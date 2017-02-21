@@ -29,6 +29,11 @@ setUp () {
     # Set random id/password
     export TTCP_ID="$(cat /dev/urandom | grep -ao '[a-zA-Z0-9]' | tr -d '\n' | fold -w 128 | head -n 1)"
     export TTCP_PASSWORD="$(cat /dev/urandom | grep -ao '[a-zA-Z0-9]' | tr -d '\n' | fold -w 128 | head -n 1)"
+    # Use SHUNIT_TMPDIR instead of TMPDIR as much as possible.
+    # TMPDIR does not work on particular environments.
+    export _TTCP_USER_HOME="${SHUNIT_TMPDIR}"
+    # Delete in advance
+    rm -rf "$_TTCP_USER_HOME/.config/ttcopy"
     echo ">>>>>>>>>>" >&2
 }
 
@@ -79,6 +84,264 @@ cl1pMockserver () {
     # $ echo "http://example.com/URL404/file.txt" | __ttcp::encode "$(echo "${TTCP_PASSWORD}${TTCP_SALT1}" | __ttcp::hash)" | __ttcp::base64enc
     local url404="yJCQtv32TUTdk_hBCvS6qBq_Apu7JWkhqgJdZMsjhAuYGwRaUJRVArqhO4IVxgcAiWo1ZDtWP_xdTs4PJmxu8Q=="
     printf "HTTP/1.0 200 Ok\n\nTTCP[$url404]" | nc -l $port
+}
+
+# Simulate first screen to enter id and passwords.
+# Usage:
+# simulateinitializer <ID> <Password> <Password(second time)> <command to show the screen>
+# @return(stdout) -- print results of given command.
+# @return(exit status) -- Same exit status of given command.
+simulateInitializer () {
+    if ! (type expect &> /dev/null); then
+        echo "'expect' is required." >&2
+        echo "Skip this test." >&2
+        return 255
+    fi
+
+    local _id="$1"
+    local _password1="$2"
+    local _password2="$3"
+    local _cmd="$4"
+    local _execution="${SHUNIT_TMPDIR}/execution"
+    local _exit_status=""
+    local _exit_status_store="${SHUNIT_TMPDIR}/exit_status"
+    local _shell="$SHELL"
+
+    # Create a file which includes commands to be executed.
+    echo "$_cmd"                           >  $_execution
+    echo "echo \$? > $_exit_status_store"  >> $_execution
+    # To prevent expect script from stopping immediately,
+    # Print the end message.
+    echo "echo 'End expect' >&2"           >> $_execution
+
+    # Start simulation with "expect" script.
+    expect -c "set timeout 60
+    spawn $_shell $_execution
+    expect \"Enter ID\" {
+        send \"$_id\"
+        send \"\\r\"
+    }
+    expect \"Enter password\" {
+        send \"$_password1\"
+        send \"\r\"
+    }
+    expect \"Enter same password\" {
+        send \"$_password2\"
+        send \"\r\"
+    }
+    expect \"End expect\"
+    interact
+    "
+
+    _exit_status=$(cat "$_exit_status_store")
+    rm -f "$_exit_status_store"
+    rm -f "$_execution"
+    return $_exit_status
+}
+
+#====================================
+# Test functions
+#====================================
+
+test_ttcopy_first_time () {
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "password" 'ttcopy'
+    assertEquals 124 $?
+}
+
+test_ttcopy_first_time_with_stdin () {
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "password" 'seq 10 | ttcopy'
+    assertEquals 124 $?
+}
+
+test_ttpaste_first_time () {
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "password" 'ttpaste'
+    assertEquals 124 $?
+}
+
+test_ttcopy_unset_id () {
+    TTCP_ID=""
+    simulateInitializer "$(genId myid)" "password" "password" 'ttcopy'
+    assertEquals 124 $?
+}
+
+test_ttcopy_unset_id_stdin () {
+    TTCP_ID=""
+    simulateInitializer "$(genId myid)" "password" "password" 'seq 10 | ttcopy'
+    assertEquals 124 $?
+}
+
+test_ttcopy_unset_password () {
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "password" 'ttcopy'
+    assertEquals 124 $?
+}
+
+test_ttpaste_unset_id () {
+    TTCP_ID=""
+    simulateInitializer "$(genId myid)" "password" "password" 'ttpaste'
+    assertEquals 124 $?
+}
+
+test_ttpaste_unset_password () {
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "password" 'ttpaste'
+    assertEquals 124 $?
+}
+
+test_ttcopy_unset_pass_opt_id () {
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "password" 'seq 10 | ttcopy -i myid'
+    assertEquals 124 $?
+}
+
+test_ttcopy_unset_id_opt_pass () {
+    TTCP_ID=""
+    simulateInitializer "$(genId myid)" "password" "password" 'seq 10 | ttcopy -p mypass'
+    assertEquals 124 $?
+}
+
+test_ttpaste_unset_pass_opt_id () {
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "password" 'ttpaste -i myid'
+    assertEquals 124 $?
+}
+
+test_ttpaste_unset_id_opt_pass () {
+    TTCP_ID=""
+    simulateInitializer "$(genId myid)" "password" "password" 'ttpaste -p mypass'
+    assertEquals 124 $?
+}
+
+test_ttcopy_first_time_wrong_pass () {
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "wrong_password" 'ttcopy'
+    assertEquals 6 $?
+}
+
+test_ttcopy_first_time_wrong_pass_stdin () {
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "wrong_password" 'seq 10 | ttcopy'
+    assertEquals 6 $?
+}
+
+test_ttpate_first_time_wrong_pass () {
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    simulateInitializer "$(genId myid)" "password" "wrong_password" 'ttpaste'
+    assertEquals 6 $?
+}
+
+test_ttcopy_init () {
+    TTCP_ID="aaa"
+    TTCP_PASSWORD="bbb"
+    simulateInitializer "$(genId myid)" "password" "password" 'ttcopy --init'
+    assertEquals 124 $?
+}
+
+test_ttpaste_init () {
+    TTCP_ID="aaa"
+    TTCP_PASSWORD="bbb"
+    simulateInitializer "$(genId myid)" "password" "password" 'ttpaste --init'
+    assertEquals 124 $?
+}
+
+test_init_multiple () {
+    TTCP_ID="aaa"
+    TTCP_PASSWORD="bbb"
+
+    # First time
+    simulateInitializer "$(genId myid)" "password" "password" 'ttcopy --init'
+    assertEquals 124 $?
+
+    # Second time
+    simulateInitializer "$(genId myid)" "password" "password" 'ttpaste --init'
+    assertEquals 124 $?
+}
+
+test_init_and_try () {
+    local _myid="$(genId myid)"
+    local _mypassword="$(randomString)"
+
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+    _TTCP_USER_HOME="${SHUNIT_TMPDIR}/try"
+
+    # First time
+    simulateInitializer "$_myid" "$_mypassword" "$_mypassword" 'ttcopy --init'
+
+    seq 200 210 | ttcopy
+
+    assertEquals "$(seq 200 210)" "$(ttpaste)"
+    assertEquals "$(seq 200 210)" "$(ttpaste -i "$_myid" -p "$_mypassword")"
+
+    rm -rf "$_TTCP_USER_HOME"
+}
+
+test_invalid_config_format () {
+    local _myid="$(genId myid)"
+    local _mypassword="$(randomString)"
+    TTCP_ID=""
+    TTCP_PASSWORD=""
+
+    _TTCP_USER_HOME="${SHUNIT_TMPDIR}/invalid"
+
+    # First time
+    simulateInitializer "$_myid" "$_mypassword" "$_mypassword" 'ttcopy --init'
+    assertEquals 124 $?
+
+    # Delete one of the line
+    cat "$_TTCP_USER_HOME/.config/ttcopy/config" | grep -Ev '^TTCP_ID_CLIP=.*$' > "$_TTCP_USER_HOME/.config/ttcopy/config_tmp"
+    rm -f "$_TTCP_USER_HOME/.config/ttcopy/config"
+    mv "$_TTCP_USER_HOME/.config/ttcopy/config_tmp" "$_TTCP_USER_HOME/.config/ttcopy/config"
+
+    # Initial screen will be displayd at the second time also.
+    simulateInitializer "$_myid" "$_mypassword" "$_mypassword" 'seq 10 | ttcopy'
+    assertEquals 124 $?
+
+    rm -rf "$_TTCP_USER_HOME"
+}
+
+test_check_credential_priority () {
+    local _id_conf="$(genId myid_conf)"
+    local _password_conf="$(randomString)"
+
+    local _id_env="$(genId myid_env)"
+    local _password_env="$(randomString)"
+
+    local _id_opt="$(genId myid_opt)"
+    local _password_opt="$(randomString)"
+
+    # Prepare ID/password environment variables.
+    TTCP_ID="$_id_env"
+    TTCP_PASSWORD="$_password_env"
+
+    # Prepare config file
+    _TTCP_USER_HOME="${SHUNIT_TMPDIR}/priority"
+    simulateInitializer "$_id_conf" "$_password_conf" "$_password_conf" 'ttcopy --init'
+
+    # Option is most prioritized.
+    seq 100 200 | ttcopy -i "$_id_opt" -p "$_password_opt"
+    assertEquals "$(seq 100 200)" "$(ttpaste -i "$_id_opt" -p "$_password_opt")"
+
+    # If environment variables are available, use them.
+    seq 100 250 | ttcopy
+    assertEquals "$(seq 100 250)" "$(ttpaste -i "$_id_env" -p "$_password_env")"
+
+    # If either environment variable is empty, use config file.
+    TTCP_ID=""
+    TTCP_PASSWORD="test"
+    seq 100 300 | ttcopy
+    assertEquals "$(seq 100 300)" "$(ttpaste -i "$_id_conf" -p "$_password_conf")"
+
+    rm -rf "$_TTCP_USER_HOME"
 }
 
 test_proxy () {
@@ -198,16 +461,6 @@ test_lack_dependency () {
     assertEquals 127 $?
 }
 
-test_unset_id () {
-    echo aaa | TTCP_ID="" ttcopy
-    assertEquals 3 $?
-}
-
-test_unset_password () {
-    echo aaa | TTCP_PASSWORD="" ttcopy
-    assertEquals 3 $?
-}
-
 test_version () {
     # Version number consists major.minor.patch
     ttcopy -V | grep -E '[0-9]+\.[0-9]+\.[0-9]+'
@@ -322,45 +575,6 @@ test_id_pass_given_by_arg () {
     echo "Pineapple Pen" | ttcopy -p "$NEW_PASSWORD_1"
     assertEquals 0 $?
     assertEquals "Pineapple Pen" "$(ttpaste -p "$NEW_PASSWORD_1")"
-}
-
-test_id_pass_given_by_arg_error () {
-    # No need to use `genId` in this test since it will fail before networking.
-
-    TTCP_ID=""
-    TTCP_PASSWORD=""
-
-    # Short option: password is empty
-    echo AAA | ttcopy -i "dummy"
-    assertEquals 3 $?
-
-    # Long option: password is empty
-    echo AAA | ttcopy --id=dummy
-    assertEquals 3 $?
-
-    # Short option: ID is empty
-    echo AAA | ttcopy -p dummy
-    assertEquals 3 $?
-
-    # Long option: ID is empty
-    echo AAA | ttcopy --password=dummy
-    assertEquals 3 $?
-
-    # Short option: password is empty
-    ttpaste -i dummy
-    assertEquals 3 $?
-
-    # Long option: password is empty
-    ttpaste --id=dummy
-    assertEquals 3 $?
-
-    # Short option: ID is empty
-    ttpaste -p dummy
-    assertEquals 3 $?
-
-    # Long option: ID is empty
-    ttpaste --password=dummy
-    assertEquals 3 $?
 }
 
 test_simple_string () {
