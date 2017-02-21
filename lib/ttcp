@@ -55,7 +55,7 @@ _TTCP_ENCRYPT_ALGORITHM="${_TTCP_ENCRYPT_ALGORITHM:-aes-256-cbc}"
 
 # Whare the last pasted content stored is.
 # It is re-used when you failed to get the remote content.
-TTCP_LASTPASTE_PATH_PREFIX="${TMPDIR}/lastPaste_"
+TTCP_LASTPASTE_PATH_PREFIX="${TMPDIR:-/tmp}/lastPaste_"
 
 TTCP_ID_PREFIX="ttcopy"
 
