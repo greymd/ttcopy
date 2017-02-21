@@ -86,7 +86,7 @@ Enter ID for ttcopy/ttpaste: myid001   #<= Enter your ID ("myid001" is just an e
 Enter password for ttcopy/ttpaste:    #<= Enter your password.
 Enter same password again:            #<= Enter again.
 
-Created credential file '/home/user/.ttcopy/config'
+Created credential file '/home/user/.config/ttcopy/config'
 Execute 'ttcopy --init' to show this screen again.
 ```
 
