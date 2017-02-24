@@ -48,14 +48,24 @@ antigen bundle "greymd/ttcopy"
 # Install
 $ brew tap greymd/ttcopy
 $ brew install greymd/ttcopy/ttcopy
+```
 
-# Uninstall
-$ brew uninstall greymd/ttcopy/ttcopy
+## With `apt-get` (For Ubuntu users)
+
+```sh
+# If necessary, install `add-apt-repository` command.
+$ sudo apt-get install software-properties-common
+
+# For Ubuntu 12.04: $ sudo apt-get install python-software-properties 
+
+$ sudo add-apt-repository ppa:ttcopy/ppa
+$ sudo apt-get update
+$ sudo apt-get install ttcopy
 ```
 
 ## Manual Installation
 
-If you are not using `zplug` (includeing bash users), follow below steps
+If you cannot choose any of above ways, follow below steps
 
 #### 1. Clone repository
 
