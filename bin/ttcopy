@@ -27,7 +27,7 @@ _HTTP_CLIENT="$(__ttcp::http_client)"
 # TTCP_ID_CLIP, TTCP_PASSWORD_CLIP, TTCP_ID_TRANS, TTCP_PASSWORD_TRANS
 __ttcp::generate_credentials
 
-TRANS_URL=$(${_HTTP_CLIENT} -so- --fail --upload-file <(cat | __ttcp::encode "${TTCP_PASSWORD_TRANS}") $TTCP_TRANSFER_SH/$TTCP_ID_TRANS );
+TRANS_URL=$(cat | __ttcp::encode "${TTCP_PASSWORD_TRANS}" | ${_HTTP_CLIENT} -so- --fail --upload-file - $TTCP_TRANSFER_SH/$TTCP_ID_TRANS );
 
 if [ $? -ne 0 ]; then
     __ttcp::unspin
