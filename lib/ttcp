@@ -2,7 +2,7 @@
 
 # Version number of commands.
 # MAJOR.MINOR.PATCH
-readonly TTCP_VERSION="2.2.0"
+readonly TTCP_VERSION="2.2.1"
 
 # Error constants
 # ===============
