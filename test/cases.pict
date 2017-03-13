@@ -1,0 +1,15 @@
+os: linux,osx
+sh: bash
+# It has only bash versions from 3.1.
+sh_version: buildin,3.1,3.2,4.0,4.1,4.2,4.3,4.4
+# All the official docker containers of centos & ubuntu.
+docker:none,centos:centos5.11,centos:centos6.6,centos:centos6.7,centos:centos6.8,centos:centos7.0.1406,centos:centos7.1.1503,centos:centos7.2.1511,centos:centos7.3.1611,centos:centos5,centos:centos6,centos:latest,ubuntu:12.04,ubuntu:14.04,ubuntu:16.04,ubuntu:16.10,ubuntu:17.04,ubuntu:latest
+
+IF [docker] <> "none" THEN [sh_version] = "buildin";
+IF [os] = "osx" THEN [sh_version] = "buildin" AND [docker] = "none";
+
+# ============================
+# How to generate test cases
+# ============================
+# Use pict (https://github.com/Microsoft/pict)
+# pict cases.pict | sed '1d' | sort | perl -anle 'print "- os: $F[0]"; print "  env: SH=$F[1] SH_VERSION=$F[2] CONTAINER=$F[3]";' | sed 's/^/        /'

@@ -2,30 +2,94 @@ language: generic
 
 sudo: required
 
-services:
-  - docker
-
-os:
-  - linux
-  - osx
-
-env:
-  - SH=bash
-  - SH=zsh
+matrix:
+    include:
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos5
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos5.11
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.6
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.7
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.8
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.0.1406
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.1.1503
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.2.1511
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.3.1611
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:latest
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:12.04
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:14.04
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:16.04
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:16.10
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:17.04
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:latest
+          services: docker
+        - os: linux
+          env: SH=bash SH_VERSION=3.1 CONTAINER=none
+        - os: linux
+          env: SH=bash SH_VERSION=3.2 CONTAINER=none
+        - os: linux
+          env: SH=bash SH_VERSION=4.0 CONTAINER=none
+        - os: linux
+          env: SH=bash SH_VERSION=4.1 CONTAINER=none
+        - os: linux
+          env: SH=bash SH_VERSION=4.2 CONTAINER=none
+        - os: linux
+          env: SH=bash SH_VERSION=4.3 CONTAINER=none
+        - os: linux
+          env: SH=bash SH_VERSION=4.4 CONTAINER=none
+        - os: osx
+          env: SH=bash SH_VERSION=buildin CONTAINER=none
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then if [[ ! $(which $SH) ]]    ; then sudo apt-get -qq update        ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then if [[ ! $(which $SH) ]]    ; then sudo apt-get install -y $SH    ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then if [[ ! $(which nc) ]]     ; then sudo apt-get install -y netcat ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then if [[ ! $(which expect) ]] ; then sudo apt-get install -y expect ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]   ; then if [[ ! $(which $SH) ]]    ; then brew update                    ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]   ; then if [[ ! $(which $SH) ]]    ; then brew install $SH               ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]   ; then if [[ ! $(which nc) ]]     ; then brew install netcat            ; fi ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]   ; then if [[ ! $(which expect) ]] ; then brew install expect            ; fi ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux"                      ]] ; then sudo apt-get -qq update        ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && ! $(which $SH)    ]] ; then sudo apt-get install -y $SH    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && ! $(which nc)     ]] ; then sudo apt-get install -y netcat ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && ! $(which expect) ]] ; then sudo apt-get install -y expect ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx"                        ]] ; then brew update                    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx"   && ! $(which $SH)    ]] ; then brew install $SH               ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx"   && ! $(which nc)     ]] ; then brew install netcat            ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx"   && ! $(which expect) ]] ; then brew install expect            ; fi
 
 before_script:
   - export TMPDIR=$TRAVIS_BUILD_DIR/tmp # Default TMPDIR is not writable on Travis CI
   - mkdir -p $TMPDIR
+    # Install bash with specific version
+  - if [[ "$SH" == "bash" && "$SH_VERSION" != "buildin" ]];then (cd "$TMPDIR" && curl "http://ftp.gnu.org/gnu/bash/bash-${SH_VERSION}.tar.gz" | tar xvz && cd bash* && ./configure; make && sudo make install && sudo mv /bin/bash /bin/bash.old && sudo cp ./bash /bin/bash ) ;fi
 
 script:
-  - $SH ./test/test.sh
+    # Run test on docker container.
+  - if [[ "$CONTAINER" != "none" ]] ; then CONTAINER_OS=${CONTAINER%%:*} CONTAINER_TAG=${CONTAINER##*:} $SH ./test/test-docker.sh ;fi
+    # Run test on native environment.
+  - if [[ "$CONTAINER" == "none" ]] ; then $SH ./test/test.sh ;fi
