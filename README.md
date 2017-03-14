@@ -11,13 +11,10 @@ Provide copying and pasting within multiple hosts through the Web.
 
 ![Introduction Image](./img/ttcp_intro_img.png)
 
-# Environment
-  * zsh (tested ver: 4.3, 5.0)
-  * bash (tested ver: 3.2, 4.2)
-
-## Requirements
-  * openssl
-  * curl
+# Requirements
+  * bash (version 3.2 and more)
+  * openssl (version 1.0.1e and more)
+  * curl (versin 7.19.7 and more)
 
 # Installation
 Set up `ttcopy` on the hosts which you want to make share same data.
@@ -34,20 +31,11 @@ zplug "greymd/ttcopy"
 
 That's all 🎉.
 
-## With [Antigen](http://antigen.sharats.me/) (for zsh users)
-The above way is almost same for the other plugin managers.
-For example, add this line to `.zshrc` if you are using [Antigen](http://antigen.sharats.me/).
-
-```sh
-antigen bundle "greymd/ttcopy"
-```
-
 ## With [Homebrew](https://github.com/Homebrew/brew) (for macOS users)
 
 ```sh
-# Install
 $ brew tap greymd/ttcopy
-$ brew install greymd/ttcopy/ttcopy
+$ brew install ttcopy
 ```
 
 ## With `apt-get` (For Ubuntu users)
