@@ -35,11 +35,21 @@ docker run -i --rm $TEST_CONTAINER openssl version
 # }
 
 ttcopy () {
-    docker run -i --rm -v "${TEST_DIR}/../":/usr/local $TEST_CONTAINER ttcopy "$@"
+    local HTTP_CLIENT=""
+    # CentOS5's curl (7.15.5) does not have SSL certificates to connect cl1p.net.
+    if [[ "$CONTAINER_OS:$CONTAINER_TAG" =~ "centos5" ]]; then
+        HTTP_CLIENT="curl -k"
+    fi
+    docker run -i --rm -v "${TEST_DIR}/../":/usr/local -e "_TTCP_HTTP_CLIENT=${HTTP_CLIENT}" $TEST_CONTAINER ttcopy "$@"
 }
 
 ttpaste () {
-    docker run -i --rm -v "${TEST_DIR}/../":/usr/local $TEST_CONTAINER ttpaste "$@"
+    local HTTP_CLIENT=""
+    # CentOS5's curl (7.15.5) does not have SSL certificates to connect cl1p.net.
+    if [[ "$CONTAINER_OS:$CONTAINER_TAG" =~ "centos5" ]]; then
+        HTTP_CLIENT="curl -k"
+    fi
+    docker run -i --rm -v "${TEST_DIR}/../":/usr/local -e "_TTCP_HTTP_CLIENT=${HTTP_CLIENT}" $TEST_CONTAINER ttpaste "$@"
 }
 
 # It is called before each tests.
