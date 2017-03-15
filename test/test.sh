@@ -11,6 +11,16 @@ elif [ -n "$BASH_VERSION" ]; then
   echo "Testing for bash $BASH_VERSION"
 fi
 
+echo "# --------------------"
+echo "# curl version"
+echo "# --------------------"
+curl --version
+
+echo "# --------------------"
+echo "# openssl version"
+echo "# --------------------"
+openssl version
+
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 . "${TEST_DIR}/../ttcp_activate.sh"
 
