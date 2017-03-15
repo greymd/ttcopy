@@ -18,6 +18,15 @@ matrix:
           env: SH=bash SH_VERSION=4.3 CONTAINER=none
         - os: linux
           env: SH=bash SH_VERSION=4.4 CONTAINER=none
+        # ------------------------------------------------
+        # Out of support (Test failed due to SSL issue)
+        # ------------------------------------------------
+        # - os: linux
+        #   services: docker
+        #   env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos5
+        # - os: linux
+        #   services: docker
+        #   env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos5.11
         - os: linux
           services: docker
           env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6
