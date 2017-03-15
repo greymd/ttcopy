@@ -4,59 +4,8 @@ sudo: required
 
 matrix:
     include:
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos5
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos5.11
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.6
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.7
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.8
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.0.1406
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.1.1503
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.2.1511
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.3.1611
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=centos:latest
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:12.04
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:14.04
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:16.04
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:16.10
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:17.04
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:latest
-          services: docker
-        - os: linux
-          env: SH=bash SH_VERSION=3.1 CONTAINER=none
+        - os: osx
+          env: SH=bash SH_VERSION=buildin CONTAINER=none
         - os: linux
           env: SH=bash SH_VERSION=3.2 CONTAINER=none
         - os: linux
@@ -69,8 +18,51 @@ matrix:
           env: SH=bash SH_VERSION=4.3 CONTAINER=none
         - os: linux
           env: SH=bash SH_VERSION=4.4 CONTAINER=none
-        - os: osx
-          env: SH=bash SH_VERSION=buildin CONTAINER=none
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.6
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.7
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos6.8
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.0.1406
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.1.1503
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.2.1511
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:centos7.3.1611
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=centos:latest
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:12.04
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:14.04
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:16.04
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:16.10
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:17.04
+        - os: linux
+          services: docker
+          env: SH=bash SH_VERSION=buildin CONTAINER=ubuntu:latest
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux"                      ]] ; then sudo apt-get -qq update        ; fi
